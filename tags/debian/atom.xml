@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: debian | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/debian/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[debian硬盘安装笔记]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/07/13/debian-setup/"/>
+    <updated>2012-07-13T11:29:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/07/13/debian-setup</id>
+    <content type="html"><![CDATA[<p>以前安装的时候都有光盘，这次换的机器，光驱坏了，那么有没有可能硬盘安装debian么？答案当然是可以的。 <br/>
+1.下载debian最新ISO映像。 <br/>
+2.下载安装所需要的vmlinuz  initrd.gz  boot.img.gz的这三个文件. <br/>
+   下载地址：<a href="http://debian.osuosl.org/debian/dists/Debian6.0.5/main/installer-i386/current/images/hd-media/">http://debian.osuosl.org/debian/dists/Debian6.0.5/main/installer-i386/current/images/hd-media/</a> <br/>
+3.下载grub4 for DOS    <br/>
+下载地址：<a href="http://download.gna.org/grub4dos/grub4dos-0.4.4-2009-06-20.zip">http://download.gna.org/grub4dos/grub4dos-0.4.4-2009-06-20.zip</a></p>
+
+<h2>安装过程：</h2>
+
+<p>1、先把WINXP安装到C盘，这里唯一要说的是如果在安装WINXP时，选择了把C盘格式化为NTFS格式，那么之后安装用的DEBIAN的ISO文件就不能放在C盘了，必须放在FAT32格式的分区的根目录下。切记哦！否则硬盘安装DEBIAN时后找不到ISO文件哦。</p>
+
+<p>WINXP安装好以后，把下载的GRUB4 for DOS包解压缩到C盘根目录，并将目录名改为grub，（个人认为不改也应该可以，不过没试，你可以试下呵），并进入GRUB目录将grldr文件复制到C盘根目录下；把vmlinuz、initrd.gz、boot.img.gz三个文件也复制到C盘根目录下：（基本上这个时候C盘是NTFS格式还是FAT32格式都没有关系的）</p>
+
+<!--more-->
+
+
+<p>2、打开C盘根目录下的boot.ini文件，打开boot.ini后在文件的最后一行加上    C:\grldr=”GRUB FOR DOS”</p>
+
+<p>之后保存并关闭boot.ini文件。</p>
+
+<p>3、把前面下载的DEBIAN安装CD的ISO文件复制到C盘根目录下，（要保证C盘是FAT32格式的），否则就复制到其它FAT32分区的根目录下。</p>
+
+<p>4、以上检查没有问题后重新启动电脑，这时应该会出现如下启动菜单：</p>
+
+<p>5、选第二项“GRUB FOR DOS”后，等屏幕出现如下画面时，按键盘上的“C”进入命令行状态。</p>
+
+<p>6、按“C”键后屏幕显示如下：</p>
+
+<p>7、这个时候输入如下三行命令：</p>
+
+<pre><code>kernel (hd0,0)/vmlinuz
+
+initrd (hd0,0)/initrd.gz
+
+boot
+</code></pre>
+
+<p>这里的（hd0,0）指的是C盘，hd是指硬盘啦，第一个0是指电脑里的第一块硬盘，第二个0是指该硬盘上的第一个主分区，如果是第二个主分区就是（hd0,1）啦，如果你有兴趣上网查一下相关的知识了，这里不说了。</p>
+
+<p>8、接下来就是安装debian，先会自动寻找ISO映像，找到后就开始安装，不再赘述。</p>
+
+<p>9、如果你的C盘是FAT32格式的，ISO文件也复制到C盘根目录，那么就不用担心了，安装程序会自动找到的。（ISO文件在其它FAT32分区根目录下也一样，我已试过呵）</p>
+
+<p>10、我的分区是这样的：/boot 200M  、2G swap、15G / 、其余大概40G的/home</p>
+
+<p>11、等系统装好后，需要设置中文字体，还需要安装一些必要软件等等。见我以前的文章，下面是链接：<a href="http://blog.chinaunix.net/uid-26053577-id-3011222.html">http://blog.chinaunix.net/uid-26053577-id-3011222.html</a></p>
+
+<p>本文章来自本人<strong><a href="http://blog.chinaunix.net/uid/26053577.html">ChinaUnix</a></strong>博客。  <br/>
+本站文章如果没有特别说明，均为<strong>原创</strong>，转载请以<strong>链接</strong>方式注明本文地址：<a href="http://tinyxd.me/blog/2012/07/13/debian-setup/">http://tinyxd.me/blog/2012/07/13/debian-setup/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[让Debian支持ntfs文件系统读写]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/30/debian-ntfs-filesysterm/"/>
+    <updated>2012-06-30T15:45:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/30/debian-ntfs-filesysterm</id>
+    <content type="html"><![CDATA[<p>刚装好debian发现在debian下往windows盘下拷贝不过去资料，上网查了些资料发现是因为不知道ntfs的读写。 <br/>
+查看我的版本号6.0.5</p>
+
+<pre><code>#more /etc/debian_version   
+6.0.5   
+</code></pre>
+
+<p>我的Debian系统: 6.0.5 <br/>
+要是用的软件使用软件:ntfs-3g <br/>
+1.修改默认源 <br/>
+因为我们学校有自己的源，故而修改成我们学校的源，而后进行更新</p>
+
+<pre><code>apt-get update   
+</code></pre>
+
+<!--more-->
+
+
+<p>2.执行安装 <br/>
+执行命令:</p>
+
+<pre><code>apt-get install ntfs-3g   
+</code></pre>
+
+<p>3.使用 <br/>
+直接使用执行命令:</p>
+
+<pre><code>mount -t ntfs-3g /dev/hdax /mnt/windows   
+</code></pre>
+
+<p>这里的/dev/hdax 请改为你自己的windows磁盘分区，可利用fdisk -l 查看。  <br/>
+如下： <br/>
+``` <br/>
+debian:/mnt# fdisk -l
+Disk /dev/sda: 500.1 GB, 500107862016 bytes
+255 heads, 63 sectors/track, 60801 cylinders
+Units = cylinders of 16065 * 512 = 8225280 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disk identifier: 0x559ed1e5</p>
+
+<p>  Device Boot      Start         End      Blocks   Id  System
+/dev/sda1               1        6528    52436128+   7  HPFS/NTFS
+/dev/sda2            6529       60802   435949345+   f  W95 Ext'd (LBA)
+/dev/sda5            6529       24543   144705456    7  HPFS/NTFS
+/dev/sda6           24544       42558   144705456    7  HPFS/NTFS
+/dev/sda7           42559       53060    84357283+   7  HPFS/NTFS
+/dev/sda8           53061       53321     2096451    b  W95 FAT32
+/dev/sda9   *       53322       53346      194560   83  Linux
+/dev/sda10          53346       53589     1951744   82  Linux swap / Solaris
+/dev/sda11          53589       55413    14647296   83  Linux
+/dev/sda12          55413       60802    43287552   83  Linux <br/>
+```</p>
+
+<p>如果是加入开机自动映射的话，编辑/etc/fstab,加入如下内容就可以了。</p>
+
+<pre><code>/dev/hdax /mnt/windows ntfs-3g defaults 0 0   
+</code></pre>
+
+<p>下面是我的系统加载NTFS文件系统的相关命令：</p>
+
+<pre><code>mount -t ntfs-3g /dev/sda6 /mnt/D
+mount -t ntfs-3g /dev/sda7 /mnt/E   
+</code></pre>
+
+<p>以上文章是对网上搜集的资料的整理。如需转载请注明出处，本文地址： <br/>
+<code>http://tinyxd.me/blog/2012/06/30/debian-ntfs-filesysterm/</code></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[debian安装nvidia显卡驱动]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/18/debianan-zhuang-nvidiaxian-qia-qu-dong/"/>
+    <updated>2012-06-18T20:31:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/18/debianan-zhuang-nvidiaxian-qia-qu-dong</id>
+    <content type="html"><![CDATA[<p>在自己的电脑上硬盘安装了Debian.下面介绍一下我是如何安装显卡驱动的.我的显卡是GForce 7100GS的.</p>
+
+<p>1>下载显卡驱动.</p>
+
+<p>这个可以到Nvidia的官网上去找,找到自己对应的版本就可以了。</p>
+
+<p>2>安装gcc并设置版本.</p>
+
+<p>#apt-get install gcc 这样安装的是gcc-4.4,如果在安装过程中提示您安装的gcc版本有问题,你可以再安装一下gcc-4.3并将gcc版本设置为4.3,具体做法:</p>
+
+<p>#apt-get install gcc-4.3</p>
+
+<p>#ln -sf /usr/bin/gcc-4.3 /usr/bin/gcc 这一句用来将gcc的版本设置为4.3</p>
+
+<p>#ls -l /usr/bin/gcc* 这一句用来查看当前使用的gcc版本</p>
+
+<!--more-->
+
+
+<p>3>安装make</p>
+
+<p>#apt-get install make</p>
+
+<p>4>安装编译头文件</p>
+
+<p>#apt-get install build-essential linux-headers-$(uname -r)</p>
+
+<p>5>编辑 /boot/gurb/grub.cfg</p>
+
+<p>在linux /vmlinuz -2.6.32-5.........quite 后面加上 nomodeset  (作用是将原来普适的显卡驱动禁用)</p>
+
+<p>6>进入字符界面 Ctrl+Alt+F1</p>
+
+<p>7>停用X-Server:</p>
+
+<p>#/etc/init.d/gdm3 stop</p>
+
+<p>8>安装显卡驱动:</p>
+
+<p> # sh .... (省略号部分为你下载的显卡驱动的名称) 你将会看到安装的进度条.</p>
+
+<p>9>#startx</p>
+]]></content>
+  </entry>
+  
+</feed>

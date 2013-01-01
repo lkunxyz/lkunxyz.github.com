@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: c++ | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/c-/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[vc debug 变 release]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/07/03/vc-debug-release/"/>
+    <updated>2012-07-03T12:23:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/07/03/vc-debug-release</id>
+    <content type="html"><![CDATA[<p>今天遇到将debug改为release版本出现好多问题，最后一一解决，现将方法贴到下面 <br/>
+生成release版的步骤： <br/>
+1.首先修改<code>project-setting-general-using mfc in a static libraryproject-setting</code>右键点击菜单空白处——选择“组建”——选择“Win32 Release“——重新编译链接。 <br/>
+2.然后<code>project-setting -c++ -precompiled Headers- not using</code> <br/>
+最后出现这个错误</p>
+
+<pre><code>nafxcwd.lib(afxmem.obj) : error LNK2005: "void __cdecl operator delete(void *)" (??3@YAXPAX@Z) already defined in LIBCMTD.lib(dbgdel.obj)   
+</code></pre>
+
+<p>关于静态库引发 nafxcw.lib LNK2005 错误的解决方法</p>
+
+<!--more-->
+
+
+<p>解决方法，进入vc6 选择菜单：</p>
+
+<pre><code>project -&gt; settings -&gt; link -&gt; Category : input   -&gt; Object/library modeules ,
+</code></pre>
+
+<p>输入：nafxcw.lib 即可。 <br/>
+原因：必须先编译这个库，才能避免函数名字重复引用。</p>
+
+<br />
+
+
+<p>Note：记住rebuiled</p>
+
+<br />
+
+
+<p>附：debug版本和release版本的区别： <br/>
+Debug 通常称为调试版本，它包含调试信息，并且不作任何优化，便于程序员调试程序。Release 称为发布版本，它往往是进行了各种优化，使得程序在代码大小和运行速度上都是最优的，以便用户很好地使用。Debug 和 Release 的真正秘密，在于一组编译选项。下面列出了分别针对二者的选项</p>
+
+<br />
+
+
+<p>Debug 版本：
+<blockquote><p>/MDd /MLd 或 /MTd 使用 Debug runtime library(调试版本的运行时刻函数库)<br/>/Od 关闭优化开关<br/>/D "<em>DEBUG" 相当于 #define </em>DEBUG,打开编译调试代码开关(主要针对assert函数)<br/>/ZI 创建 Edit and continue(编辑继续)数据库，这样在调试过程中如果修改了源代码不需重新编译<br/>/GZ 可以帮助捕获内存错误<br/>/Gm 打开最小化重链接开关，减少链接时间</p></blockquote></p>
+
+<br />
+
+
+<p>Release 版本： <br/>
+<blockquote><p>/MD /ML 或 /MT 使用发布版本的运行时刻函数库<br/>/O1 或 /O2 优化开关，使程序最小或最快<br/>/D "NDEBUG" 关闭条件编译调试代码开关(即不编译assert函数)<br/>/GF 合并重复的字符串，并将字符串常量放到只读内存，防止 被修改</p></blockquote></p>
+
+<br />
+
+
+<p> 实际上，Debug 和 Release 并没有本质的界限，他们只是一组编译选项的集合，编译器只是按照预定的选项行动。事实上，我们甚至可以修改这些选项，从而得到优化过的调试版本或是带跟踪语句的发布版本。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[排序算法总结（四）]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/29/radix-sort/"/>
+    <updated>2012-06-29T23:28:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/29/radix-sort</id>
+    <content type="html"><![CDATA[<p>“基数排序法”属于“分配式排序”（distribution sort），基数排序法又称“桶子法”（bucket sort）或bin sort ，它是通过键值的部分资讯，将要排序的元素分配至某些“桶”中，借以达到排序的作用。基数排序法是属于稳定性的排序，其时间复杂度为O（nlog(r)m），其中r为所采用的基数，而m为堆数。在某些时候，基数排序法的效率高于其他的比较性排序。 <br/>
+什么是基数排序： 基数排序也称桶排序，是一种当关键字为整数类型时的一种非常高效的排序方法。基数排序算法进出桶中的数据元素序列满足先进先出的原则（桶实际就是队列）。</p>
+
+<!--more-->
+
+
+<h3>c语言实现基数排序</h3>
+
+<p>``` c c语言实现基数排序</p>
+
+<h1>include &lt;stdio.h></h1>
+
+<h1>include &lt;stdlib.h></h1>
+
+<p>int main()
+{</p>
+
+<pre><code>int data[10]={73,22,93,43,55,14,28,65,39,81};
+int temp[10][10]={0};
+int order[10]={0};
+int i,j,k,n,lsd;
+k=0;n=1;
+printf("\n排序前: ");
+for (i=0;i&lt;10;i++) printf("%d ",data[i]);
+putchar('\n');
+while (n&lt;=10)
+{
+    for (i=0;i&lt;10;i++){
+    lsd=((data[i]/n)%10);
+    temp[lsd][order[lsd]]=data[i];
+    order[lsd]++;
+    }
+    printf("\n重新排列: ");
+    for (i=0;i&lt;10;i++){
+        if(order[i]!=0)
+        for (j=0;j&lt;order[i];j++){
+            data[k]=temp[i][j];
+            printf("%d ",data[k]);
+            k++;
+        }
+        order[i]=0;
+    }
+    n*=10;
+    k=0;
+}
+putchar('\n');
+printf("\n排序后: ");
+for (i=0;i&lt;10;i++) printf("%d ",data[i]);
+return 0;
+</code></pre>
+
+<p>}
+```</p>
+
+<h3>c++实现基数排序</h3>
+
+<p>``` c++ c++实现基数排序
+int maxbit(int data[],int n) //辅助函数，求数据的最大位数
+{</p>
+
+<pre><code>int d = 1; //保存最大的位数
+int p =10;
+for(int i = 0;i &lt; n; ++i)
+{
+    while(data[i] &gt;= p)
+    {
+    p *= 10;
+    ++d;
+    }
+}
+return d;
+</code></pre>
+
+<p>}</p>
+
+<p>void radixsort(int data[],int n) //基数排序
+{</p>
+
+<pre><code>int d = maxbit(data,n);
+int * tmp = new int[n];
+int * count = new int[10]; //计数器
+int i,j,k;
+int radix = 1;
+for(i = 1; i&lt;= d;i++) //进行d次排序
+{
+    for(j = 0;j &lt; 10;j++)
+    count[j] = 0; //每次分配前清空计数器
+    for(j = 0;j &lt; n; j++)
+    {
+        k = (data[j]/radix)%10; //统计每个桶中的记录数
+        count[k]++;
+    }
+    for(j = 1;j &lt; 10;j++)
+        count[j] = count[j-1] + count[j]; //将tmp中的位置依次分配给每个桶
+    for(j = n-1;j &gt;= 0;j--) //将所有桶中记录依次收集到tmp中
+    {
+    k = (data[j]/radix)%10;
+    mp[count[k]] = data[j];
+    tcount[k]--;
+    } 
+    for(j = 0;j &lt; n;j++) //将临时数组的内容复制到data中
+        data[j] = tmp[j];
+    radix = radix*10;
+}
+delete [] tmp;
+delete [] count;
+</code></pre>
+
+<p>}
+<code>``
+实现基数排序算法时，有基于顺序队列和基于链式队列两种不同的实现方法。基于链式队列的实现中可以把桶设计成一个队列数组QueueArray，数组的每个元素中有两个域，一个队首指针（front）和一个队尾指针（rear）。
+本文是查阅书籍和网络资料整理而来，转载请注明出处。并以超链接的形式注明本文地址：   
+</code>http://tinyxd.me/blog/2012/06/29/radix-sort/` <br/>
+下一节更新归并排序。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[排序算法总结（三）]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/28/select-sort/"/>
+    <updated>2012-06-28T12:38:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/28/select-sort</id>
+    <content type="html"><![CDATA[<p>选择排序是指在每次排序时，选择最大或者最小项，将其放入适当的位置上，反复操作，直到所有数据排序完成为止。选择排序是一类比较常见的排序，现实生活中也比较常见，比如一个班级的学生排队，先将最高的学生排到队首，然后在其他学生中再挑出最高的一个，排在第二的位置，以此类推，直到全部排完。</p>
+
+<p>选择排序的交换操作介于 0 和 ( n - 1 ) 次之间。选择排序的比较操作为 n ( n - 1 ) / 2 次之间。选择排序的赋值操作介于 0 和 3 ( n - 1 ) 次之间。 比较次数O（  n<sup>2</sup> ）,比较次数与关键字的初始状态无关，总的比较次数N=(n-1)+(n-2)+...+1=n*(n-1)/2。 交换次数O(n),最好情况是，已经有序，交换0次；最坏情况是，逆序，交换n-1次。 交换次数比冒泡排序少多了，由于交换所需CPU时间比比较所需的CPU时间多，n值较小时，选择排序比冒泡排序快。</p>
+
+<h2>直接选择排序（不稳定）</h2>
+
+<p>``` c++ 直接选择排序
+void SelectSort(elemtype R[], int n)
+{</p>
+
+<pre><code>int i, j, m;
+elemtype t;
+for(i=0; i&lt;n-1; i++)
+{
+    m = i;
+    for(j = i+1; j &lt; n; j++)
+    {
+        if(R[j] &lt; R[m])
+        m = j;
+    }
+    if(m != i)
+    {
+        t = R[i];
+        R[i] = R[m];
+        R[m] = t;
+    }
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<!--more-->
+
+
+<h2>堆排序(Heapsort)</h2>
+
+<h3>“堆”定义</h3>
+
+<p>树中任一非叶结点的关键字均不大于（或不小于）其左右孩子（若存在）结点的关键字。</p>
+
+<h3>堆的高度</h3>
+
+<p>堆可以被看成是一棵树，结点在堆中的高度可以被定义为从本结点到叶子结点的最长简单下降路径上边的数目；定义堆的高度为树根的高度。我们将看到，堆结构上的一些基本操作的运行时间至多是与树的高度成正比，为O（lgn）。</p>
+
+<h3>堆排序思想</h3>
+
+<p>堆排序利用了大根堆（或小根堆）堆顶记录的关键字最大（或最小）这一特征，使得在当前无序区中选取最大（或最小）关键字的记录变得简单。 <br/>
+（1）用大根堆排序的基本思想 <br/>
+① 先将初始文件R[1..n]建成一个大根堆，此堆为初始的无序区    <br/>
+② 再将关键字最大的记录R[1]（即堆顶）和无序区的最后一个记录R[n]交换，由此得到新的无序区R[1..n-1]和有序区R[n]，且满足R[1..n-1].keys≤R[n].key   <br/>
+③由于交换后新的根R[1]可能违反堆性质，故应将当前无序区R[1..n-1]调整为堆。然后再次将R[1..n-1]中关键字最大的记录R[1]和该区间的最后一个记录R[n-1]交换，由此得到新的无序区R[1..n-2]和有序区R[n-1..n]，且仍满足关系R[1..n-2].keys≤R[n-1..n].keys，同样要将R[1..n-2]调整为堆。
+......</p>
+
+<p>直到无序区只有一个元素为止。 <br/>
+（2）大根堆排序算法的基本操作： <br/>
+① 初始化操作：将R[1..n]构造为初始堆； <br/>
+② 每一趟排序的基本操作：将当前无序区的堆顶记录R[1]和该区间的最后一个记录交换，然后将新的无序区调整为堆（亦称重建堆）。 <br/>
+注意： <br/>
+①只需做n-1趟排序，选出较大的n-1个关键字即可以使得文件递增有序。 ②用小根堆排序与利用大根堆类似，只不过其排序结果是递减有序的。堆排序和直接选择排序相反：在任何时刻堆排序中无序区总是在有序区之前，且有序区是在原向量的尾部由后往前逐步扩大至整个向量为止。</p>
+
+<h3>特点</h3>
+
+<p>堆排序（HeapSort）是一树形选择排序。堆排序的特点是：在排序过程中，将R[l..n]看成是一棵完全二叉树的顺序存储结构，利用完全二叉树中双亲结点和孩子结点之间的内在关系（参见二叉树的顺序存储结构），在当前无序区中选择关键字最大（或最小）的记录</p>
+
+<h3>堆排序与直接选择排序的区别</h3>
+
+<p>直接选择排序中，为了从R[1..n]中选出关键字最小的记录，必须进行n-1次比较，然后在R[2..n]中选出关键字最小的记录，又需要做n-2次比较。事实上，后面的n-2次比较中，有许多比较可能在前面的n-1次比较中已经做过，但由于前一趟排序时未保留这些比较结果，所以后一趟排序时又重复执行了这些比较操作。 <br/>
+堆排序可通过树形结构保存部分比较结果，可减少比较次数。</p>
+
+<h3>算法分析</h3>
+
+<p>堆排序的时间，主要由建立初始堆和反复重建堆这两部分的时间开销构成，它们均是通过调用Heapify实现的。堆排序的最坏时间复杂度为O(nlogn)。堆序的平均性能较接近于最坏性能。由于建初始堆所需的比较次数较多，所以堆排序不适宜于记录数较少的文件。堆排序是就地排序，辅助空间为O(1），它是<strong>不稳定</strong>的排序方法。 <br/>
+``` c 堆排序c语言实现
+//C语言描述
+// array是待调整的堆数组，i是待调整的数组元素的位置，nlength是数组的长度
+void HeapAdjust(int array[],int i,int nLength)//本函数功能是：根据数组array构建大根堆
+{</p>
+
+<pre><code>int nChild;
+int nTemp;
+for (nTemp = array[i]; 2 * i + 1 &lt; nLength; i = nChild)
+{
+    // 子结点的位置=2*（父结点位置）+ 1
+    nChild = 2 * i + 1;
+    // 得到子结点中较大的结点
+    if (nChild &lt; nLength - 1 &amp;&amp; array[nChild + 1] &gt; array[nChild])
+    ++nChild;
+    // 如果较大的子结点大于父结点那么把较大的子结点往上移动，替换它的父结点
+    if (nTemp &lt; array[nChild])
+    {
+    array[i]= array[nChild];
+    }
+    else // 否则退出循环
+    {
+    break;
+    }
+    // 最后把需要调整的元素值放到合适的位置
+    array[nChild]= nTemp;
+}
+</code></pre>
+
+<p>}</p>
+
+<pre><code>// 堆排序算法
+</code></pre>
+
+<p>void HeapSort(int array[],int length)
+{</p>
+
+<pre><code>// 调整序列的前半部分元素，调整完之后第一个元素是序列的最大的元素
+for (int i = length / 2 - 1; i &gt;= 0; --i)
+{
+HeapAdjust(array,i,length);
+}
+// 从最后一个元素开始对序列进行调整，不断的缩小调整的范围直到第一个元素
+for (int i = length - 1; i &gt; 0; --i)
+{
+// 把第一个元素和当前的最后一个元素交换，
+// 保证当前的最后一个位置的元素都是在现在的这个序列之中最大的
+Swap(&amp;array[0],&amp;array[i]);
+// 不断缩小调整heap的范围，每一次调整完毕保证第一个元素是当前序列的最大值
+HeapAdjust(array,0,i);
+}
+</code></pre>
+
+<p>}
+<code>
+</code> c++ 堆排序算法（c++描述）
+//堆排序算法（C++描述）</p>
+
+<h1>define MAX 100//数据元素的最大个数</h1>
+
+<p>typedef struct
+{</p>
+
+<pre><code>int r[MAX];
+int length;
+</code></pre>
+
+<p>}SqList;//定义一个线性表用于存放数据元素
+void HeapAdjust(SqList &amp;L,int s,int m)
+{</p>
+
+<pre><code>//已知L.r[s...m]中记录除L.r[s]外均满足堆的定义，本函数用于使L.r[s...m]成为一个大顶堆
+int j;
+int e=L.r[s];
+for(j=2*s;j&lt;=m;j*=2)
+{
+    if(j&lt;M&amp;&amp;L.R[J]&lt;L.R[J+1]) ++j;
+    if(e&gt;=L.r[j]) break;
+    L.r[s]=L.r[j];
+    s=j;
+}
+L.r[s]=e;
+</code></pre>
+
+<p>}
+void HeapSort(SqList &amp;L)
+{</p>
+
+<pre><code>//对顺序表L进行堆排序
+int i,e;
+for(i=L.length/2;i&gt;0;i--)
+HeapAdjust(L,i,L.length);
+for(i=L.length;i&gt;1;i--)
+{
+    //将大顶堆的顶记录和最后一个记录相互交换
+    e=L.r[1];
+    L.r[1]=L.r[i];
+    L.r[i]=e;
+    HeapAdjust(L,1,i-1);
+}
+</code></pre>
+
+<p>}
+<code>``
+本文是查阅书籍和网络资料整理而来，转载请注明出处。并以超链接的形式注明本文地址：   
+</code>http://tinyxd.me/blog/2012/06/28/select-sort/` <br/>
+下一节更新基数排序。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[排序算法总结（二）]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/27/swap-sort/"/>
+    <updated>2012-06-27T20:50:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/27/swap-sort</id>
+    <content type="html"><![CDATA[<p>昨天总结了插入排序，今天总结交换排序。 <br/>
+交换排序是一种主要以交换的方式对序列进行排序的方法。排序的基本方法或手段主要就是比较和交换，像选择法等都借助了交换的手段，但都不是主要以交换为手段，如在直接选择排序的时候，一轮比较就能确定最大元素的位置，最后再进行交换。交换排序被公认为“稳定”的排序方法。</p>
+
+<h2>冒泡排序</h2>
+
+<p>冒泡排序，是指计算机的一种排序方法，它的时间复杂度为O（ n<sup>2</sup> ），虽然不及堆排序、快速排序的O（nlog n，底数为2），但是有两个优点：</p>
+
+<!--more-->
+
+
+<p>
+1. “编程复杂度”很低，很容易写出代码； <br/>
+2. 具有稳定性，这里的稳定性是指原序列中相同元素的相对顺序仍然保持到排序后的序列，而堆排序、快速排序均不具有稳定性。不过，一路、二路归并排序、不平衡二叉树排序的速度均比冒泡排序快，且具有稳定性，但速度不及堆排序、快速排序。 <br/>
+冒泡排序（BubbleSort）的基本概念是：依次比较相邻的两个数，将小数放在前面，大数放在后面。即在第一趟：首先比较第1个和第2个数，将小数放前，大数放后。然后比较第2个数和第3个数，将小数放前，大数放后，如此继续，直至比较最后两个数，将小数放前，大数放后。至此第一趟结束，将最大的数放到了最后。在第二趟：仍从第一对数开始比较（因为可能由于第2个数和第3个数的交换，使得第1个数不再小于第2个数），将小数放前，大数放后，一直比较到倒数第二个数（倒数第一的位置上已经是
+最大的），第二趟结束，在倒数第二的位置上得到一个新的最大数（其实在整个数列中是第二大的数）。如此下去，重复以上过程，直至最终完成排序。 <br/>
+由于在排序过程中总是小数往前放，大数往后放，相当于气泡往上升，所以称作冒泡排序。 <br/>
+若记录序列的初始状态为"正序"，则冒泡排序过程只需进行一趟排序，在排序过程中只需进行n-1次比较，且不移动记录；反之，若记录序列的初始状态为"逆序"，则需进行n(n-1）/2次比较和记录移动。因此冒泡排序总的时间复杂度为O(n*n)。</p>
+
+<h2>快速排序（不稳定）</h2>
+
+<p>快速排序（Quicksort）是对冒泡排序的一种改进。由C. A. R. Hoare在1962年提出。它的基本思想是：通过一趟排序将要排序的数据分割成独立的两部分，其中一部分的所有数据都比另外一部分的所有数据都要小，然后再按此方法对这两部分数据分别进行快速排序，整个排序过程可以递归进行，以此达到整个数据变成有序序列。  <br/>
+``` c++ C++，快速排续
+//C++，快速排序</p>
+
+<p>void sort(int *a,int left,int right)
+{</p>
+
+<pre><code>int i=left,j=right;
+int k=a[left];
+if(left&gt;=right) return ;
+while(i!=j)
+{
+    while(i&lt;j&amp;&amp; a[j]&gt;=k) j--;
+    a[i]=a[j];
+    while(i&lt;j&amp;&amp; a[i]&lt;=k) i++;
+    a[j]=a[i];
+}
+a[i]=k;
+sort(a,left,i-1);
+sort(a,i+1,right);
+</code></pre>
+
+<p>}
+<code>``
+本文是查阅书籍和网络资料整理而来，转载请注明出处。并以超链接的形式注明本文地址：   
+</code>http://tinyxd.me/blog/2012/06/27/swap-sort/` <br/>
+下一节更新选择排序。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[排序算法总结（一）]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/27/straight-insertion-sort/"/>
+    <updated>2012-06-27T08:00:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/27/straight-insertion-sort</id>
+    <content type="html"><![CDATA[<p>排序算法是在学习数据结构的过程中，必须熟练掌握的。而由于其算法种类比较多，所以总结一下还是有必要的。今天先把插入排序总结下。 <br/>
+插入排序的基本操作就是将一个数据插入到已经排好序的有序数据中，从而得到一个新的、个数加一的有序数据，算法适用于少量数据的排序，时间复杂度为O(n<sup>2)。是稳定的排序方法。</sup></p>
+
+<h2>直接插入排序(straight insertion sort)</h2>
+
+<p>每次从无序表中取出第一个元素，把它插入到有序表的合适位置，使有序表仍然有序。 <br/>
+C/C++代码实现直接插入排序：  <br/>
+``` c++  插入排序代码(straight insertion sort)
+void insert_sort(int a[], int n)
+{</p>
+
+<pre><code>int i, j, temp;
+for (i = 1; i &lt; n; ++i)
+{
+    temp = a[i];
+    for (j = i; j&gt;0 &amp;&amp; temp &lt; a[j - 1]; --j)
+    {
+        a[j] = a[j - 1];
+    }
+    a[j] = temp;
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<!--more-->
+
+
+<h2>希尔排序 (shell sort)</h2>
+
+<p>概念：先取一个小于n（待排序的数据个数）的整数d1作为第一个增量，把文件的全部记录分成d1个组。把所有距离为d1的倍数的记录放在同一个组中。先在各组内进行直接插入排序，然后，取第二个增量d2&lt;d1重复上述的分组和排序，直至所取的增量dt=1（dt&lt;dt-1&lt;…&lt;d2&lt;d1），即所有记录放在同一组中进行直接插入排序为止。该方法实质上是一种分组直接插入方法。  <br/>
+``` c++ 希尔排序(shell sort)
+//希尔排序</p>
+
+<h1>include &lt;stdio.h></h1>
+
+<h1>define LEN 8</h1>
+
+<p>void main (void)
+{</p>
+
+<pre><code>int d=LEN;
+int R[LEN]={76,81,50,22,98,33,12,79};
+int i,j,t=1,temp;
+while(d&gt;0)
+{
+d/=2;
+if(d&gt;0)
+for(int y=0;y&lt;d ;y++)
+{
+    for(i=(d+y);i&lt;LEN;i=(i+d))
+    {
+        if(R[i]&lt;R[i-d])
+        {
+            temp=R[i];
+            j=i-d;
+            do{
+                printf("%d -&gt; %d,",R[j],R[j+d]);
+                R[j+d]=R[j];
+                j=j-d;
+            }while(j&gt;=0 &amp;&amp; temp &lt;R[j]);
+            printf("%d -&gt; %d",temp,R[j+d]);
+            R[j+d] = temp;
+        }
+        printf("\n");
+        for(int a=0;a&lt;LEN;a++)
+        {
+            printf("%d",R[a]);
+        }
+        printf("%d\n",y+1);
+        printf("\n");
+        }
+    printf("\n");
+    }
+}
+</code></pre>
+
+<p>}
+<code>``
+本文是查阅书籍和网络资料整理而来，转载请注明出处。并以超链接的形式注明本文地址：</code>http://tinyxd.me/blog/2012/06/27/straight-insertion-sort/ `<br/>
+下一节更新交换排序。</p>
+]]></content>
+  </entry>
+  
+</feed>

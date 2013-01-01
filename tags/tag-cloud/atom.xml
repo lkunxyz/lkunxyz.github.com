@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: tag cloud | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/tag-cloud/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[octopress博客添加标签云]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/25/octopress-add-tag-cloud/"/>
+    <updated>2012-06-25T00:35:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/25/octopress-add-tag-cloud</id>
+    <content type="html"><![CDATA[<p>折腾了好久，终于弄好了。我基本是follow这篇文章的：<a href="http://log4d.com/2012/05/tag-cloud/">给 Octopress 加上标签功能</a> <br/>
+官方只提供了category的云显示，和列表显示，这是其<a href="https://github.com/tokkonopapa/octopress-tagcloud">github地址</a>，其实官方提供的这个第三方插件并没有给文章加入tag的概念。（category和tag分别代表日志分类和标签）</p>
+
+<!--more-->
+
+
+<p>
+现在我还对ruby不是很熟悉，但是看到了<a href="http://log4d.com/2012/05/tag-cloud/">这篇文章</a>，找到了<a href="https://github.com/robbyedwards/octopress-tag-pages">robbyedwards / octopress-tag-pages</a>和<a href="https://github.com/robbyedwards/octopress-tag-cloud">robbyedwards / octopress-tag-cloud</a>。前者采集文章的tag，后者是标签云的显示。 <br/>
+这两个使用方法相同，把文件放到相应的目录即可。而第二个插件<code>octopress-tag-cloud</code> 会和官方的有冲突，直接用<a href="https://github.com/alswl/octopress-category-list">这个</a>就好。 <br/>
+还有最后一点非常重要，得修改两个地方： <br/>
+一个是sass/custom/_styles.scss
+```</p>
+
+<h1>content article .cloud li{</h1>
+
+<p>  display: inline;
+  list-style: none outside none;
+  padding: 0 4px;
+}</p>
+
+<p>```</p>
+
+<p>然后把显示tagcloud的页面 class改为cloud(class="cloud")。 <br/>
+大功告成，tag cloud页面请点击<a href="http://tinyxd.me/tags/index.html">这里</a>。</p>
+]]></content>
+  </entry>
+  
+</feed>

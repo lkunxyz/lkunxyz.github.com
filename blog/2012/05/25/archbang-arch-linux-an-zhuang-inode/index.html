@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>archbang arch linux 安装inode  - Keen on Art of Tech</title>
+<meta name="author" content="Tiny">
+
+
+<meta name="description" content="archbang arch linux 安装inode客户端">
+<meta name="keywords" content="linux, archbang,archlinux,inode">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://lkunxyz.github.com/blog/2012/05/25/archbang-arch-linux-an-zhuang-inode">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Keen on Art of Tech" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+
+
+
+
+
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32291601-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+<meta name="baidu-site-verification" content="fZnhm9XDDuXJU54V" />
+  <h1><a href="/">Keen on Art of Tech</a></h1>
+  
+    <h2>Stay Hungry,Stay Foolish,Stay Patient.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:lkunxyz.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/categories/essay">Essay</a></li>
+  <li><a href="/tags">Tag Cloud</a></li>
+  <li><a href="/reading-list">Reading List</a></li>
+  <li><a href="/links">Links</a></li>
+  <li><a href="/about">About Me</a></li>
+  <li><a href="/message-board">Message Board</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Archbang Arch Linux 安装inode</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-25T14:34:00+08:00" pubdate data-updated="true">May 25<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>第一步：cp iNodeClient.tar.gz 到 /home/***** 目录下。进入~目录下  <br/>
+第二步：终端运行 tar -xvf iNodeClient.tar.gz。<br/>
+第三步：修改/home//iNodeClient/下install.sh，把 OS_UBUNTU=`cat /etc/issue | grep &#8216;Ubuntu&#8217;`那一行及以下的脚本都删除，然后保存，执行sudo ./install.sh。<br/>
+第四步：cp  home/*****/iNodeClient/ 目录下的iNodeAuthService到/etc/rc.d/目录下，并修改权限chmod 755 /etc/rc.d/iNodeAuthService。<br/>
+第五步：打开/etc/rc.conf ，在DAEMONS处添加@iNodeAuthService。（让iNode认证服务开机自启动） <br/>
+第六步：现在执行sudo /etc/rc.d/iNodeAuthService start，发现出错了。错误出现在enablecards.ps这个文件里，打开看，你会发现这个文件的作用只是用来up网卡。一般来说你的网卡都已经up了的啦。你可以把里面的内容改成： <br/>
+#!/bin/sh<br/>
+x=eth0（你所使用的网卡） <br/>
+ifconfig $x up  <br/>
+再运行一次sudo /etc/rc.d/iNodeAuthService start，你应该会发现服务启动成功了。  <br/>
+第七步：命令行里面执行一下sudo ./iNodeClient 然后楼主发现出现了一些库的依赖问题。iNode需要一些比较旧的库，对于jpeg tiff等库 你可以用ln -s 来用新版本的库代替旧版本。而其中有一个是libpng12.so.0是必须需要旧版本的。见附件 或者可以去官网自己下载ftp://ftp.simplesystems.org/pub/libpng/png/src/  <br/>
+需要下载的文件是libpng-1.2.49.tar.bz2 <br/>
+安装方法如下： <br/>
+1.解压，然后执行./configure &#8211;prefix=/usr/ <br/>
+2.编译及安装 <br/>
+#make  <br/>
+#make install <br/>
+安装之前可以make check 以下 看看有没有什么错误，如果没错误 make install 那么libpng就安装好了。</p>
+
+<p>参考：http://ecnc.sysu.edu.cn/viewthread.php?tid=18558</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Tiny</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-05-25T14:34:00+08:00" pubdate data-updated="true">May 25<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/linux/'>linux</a>
+  
+</span>
+
+
+      
+
+<span class="tags">
+  
+     Tag: <a class='tag' href='/tags/archbang/'>archbang</a>, <a class='tag' href='/tags/archlinux/'>archlinux</a>, <a class='tag' href='/tags/inode/'>inode</a>, <a class='tag' href='/tags/linux/'>linux</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+
+  
+
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+  
+    <a class="bshareDiv" href="http://www.bshare.cn/share">Sharing</a><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#uuid=5c055483-dee0-46ed-899f-06e078ca57ca&amp;style=999&amp;img=http%3A%2F%2Fstatic.bshare.cn%2Fimages%2Fbuttons%2Fbox-shareTo-zh.gif&amp;w=147&amp;h=21"></script>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/05/23/wei-yi-jing-cun-zai-de-github-octopresspei-zhi-ben-di-huan-jing/" title="Previous Post: 为已经存在的github Octopress配置本地环境">&laquo; 为已经存在的github Octopress配置本地环境</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/05/26/bang-nin-kuai-su-ru-men-tide-codec-engine-zhuan-zai/" title="Next Post: 帮您快速入门TI的Codec Engine">帮您快速入门TI的Codec Engine &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    
+<section>
+<iframe width="350" height="75" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=350&height=75&fansRow=1&ptype=0&speed=0&skin=1&isTitle=0&noborder=0&isWeibo=0&isFans=0&uid=2328532522&verifier=7efcfd6a&dpc=1"></iframe>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/09/10/job-hunting-2012/">开始找工作了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/02/nginx-ssl/">个人网站上安装SSL证书</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/30/debian-ubuntu-setup-openvpn/">VPS安装openVPN</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/27/use-dropbox-backup-vps-and-database/">用Dropbox备份VPS网站及数据库 </a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/26/imag-file-explorer/">图床管理</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Category Cloud</h1>
+    <span id="tag-cloud"><a href='/blog/categories/davinci' style='font-size: 102.22222222222223%'>Davinci(1)</a> <a href='/blog/categories/embedded' style='font-size: 104.44444444444444%'>Embedded(2)</a> <a href='/blog/categories/essay' style='font-size: 108.88888888888889%'>Essay(4)</a> <a href='/blog/categories/git' style='font-size: 102.22222222222223%'>Git(1)</a> <a href='/blog/categories/it' style='font-size: 104.44444444444444%'>It(2)</a> <a href='/blog/categories/java' style='font-size: 102.22222222222223%'>Java(1)</a> <a href='/blog/categories/linux' style='font-size: 160.0%'>Linux(27)</a> <a href='/blog/categories/octopress' style='font-size: 117.77777777777777%'>Octopress(8)</a> <a href='/blog/categories/php' style='font-size: 102.22222222222223%'>Php(1)</a> <a href='/blog/categories/python' style='font-size: 102.22222222222223%'>Python(1)</a> <a href='/blog/categories/ruby' style='font-size: 106.66666666666667%'>Ruby(3)</a> <a href='/blog/categories/software' style='font-size: 122.22222222222223%'>Software(10)</a> <a href='/blog/categories/vps' style='font-size: 113.33333333333333%'>Vps(6)</a> </span>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Tiny -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+
+-
+<a href="http://tinyxd.me/sitemap.xml">Google Sitemap</a>
+|
+<script src="http://s16.cnzz.com/stat.php?id=4219959&web_id=4219959" language="JavaScript"></script>
+ | 
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ff5ccb6805fc752bf5385b72e8accad49' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+|
+<a href="http://www.prchecker.info/" title="Display Pagerank" target="_blank">
+<img src="http://pr.prchecker.info/getpr.php?codex=aHR0cDovL3Rpbnl4ZC5tZQ==&tag=3" alt="Display Pagerank" style="border:0;" /></a>
+
+</p>
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'tinyxd';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://lkunxyz.github.com/blog/2012/05/25/archbang-arch-linux-an-zhuang-inode/';
+        var disqus_url = 'http://lkunxyz.github.com/blog/2012/05/25/archbang-arch-linux-an-zhuang-inode/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</body>
+</html>

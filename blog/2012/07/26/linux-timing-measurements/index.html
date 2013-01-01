@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>linux系统定时测量 - Keen on Art of Tech</title>
+<meta name="author" content="Tiny">
+
+
+<meta name="description" content="linux timing measurements,系统定时测量">
+<meta name="keywords" content="linux,kernel,内核,linux timing measurements,系统定时测量">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://lkunxyz.github.com/blog/2012/07/26/linux-timing-measurements">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Keen on Art of Tech" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+
+
+
+
+
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32291601-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+<meta name="baidu-site-verification" content="fZnhm9XDDuXJU54V" />
+  <h1><a href="/">Keen on Art of Tech</a></h1>
+  
+    <h2>Stay Hungry,Stay Foolish,Stay Patient.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:lkunxyz.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/categories/essay">Essay</a></li>
+  <li><a href="/tags">Tag Cloud</a></li>
+  <li><a href="/reading-list">Reading List</a></li>
+  <li><a href="/links">Links</a></li>
+  <li><a href="/about">About Me</a></li>
+  <li><a href="/message-board">Message Board</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Linux系统定时测量</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-26T12:48:00+08:00" pubdate data-updated="true">Jul 26<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Linux内核必须完成的两种主要定时测量：</p>
+
+<p>保存当前的时间和日期，以便通过time()、ftime()、gettimeofday()系统调用把它们返回给用户程序，也可以由内核本身把当前时间作为文件和网络包的时间戳。</p>
+
+<p>维持定时器，这种机制能够告诉内核或用户程序某一时间间隔已经过去了。</p>
+
+<p>一般会遇到的几种时钟和定时器电路：实时时钟（Real Time Clock RTC）、时间戳计数器（Time Stamp Counter TSC）、可编程间隔定时器（Programmable Interval Timer PIT）、CPU本地定时器（APIC中）、高精度事件定时器（HPET）、ACPI电源管理定时器。</p>
+
+<p>Linux的计时体系结构是一组与时间流相关的内核数据结构和函数。实际上，基于80x86多处理器机器所具有的计时体系结构与单处理器机器所具有的稍有不同：</p>
+
+<p>在三处理器系统上，所有的计时活动都是由全局定时器（可以是可编程间隔定时器也可以是高精度事件定时器）产生的中断触发的。</p>
+
+<!--more-->
+
+
+<p>在多处理器系统上，所有普通的活动（像软定时器处理）都是由全局定时器产生的中断触发的，而具体的CPU的活动（像监控当前运行进程的执行时间）是由本地APIC定时器产生的中断触发的。</p>
+
+<p>jiffies</p>
+
+<p>jiffies是一个计数器，用来记录自系统启动依赖产生的节拍总数。启动时，内核将该变量初始化为0，此后，每次时钟中断处理程序都会增加该变量的值。因为一秒内时钟中断的次数等于Hz，所以jiffies一秒内增加的值也就为Hz。系统运行时间以秒为单位计算，就等于jiffies/Hz。</p>
+
+<p>xtime</p>
+
+<p>xtime变量存放当前时间和日期；它是一个timespec类型的数据结构，该结构有两个字段：</p>
+
+<p>1.tv_sec 存放自1970年1月1日（UTC）午夜以来经过的秒数。</p>
+
+<p>2.tv_nsec存放自上一秒开始经过的纳秒数（它的值域范围在0-999999999之间）</p>
+
+<p>在单处理器系统上，所有与定时有关的活动都是由IRQ线0上的可编程间隔定时器产生的中断触发的。</p>
+
+<p>多处理器系统可以依赖两种不同的时钟中断源：可编程间隔定时器或高精度事件定时器产生的中断，以及CPU本地定时器产生的中断(监管内核代码并检测当前进程在特定CPU上已经运行了多长时间)。</p>
+
+<p>内核在于定时相关的其他任务中必须周期性地收集若干数据用于：</p>
+
+<pre><code>检查运行进程的CPU资源限制  
+
+更新与本地CPU工作负载有关的统计数  
+
+计算平均系统负载  
+
+监管内核代码  
+</code></pre>
+
+<p>软定时器和延迟函数</p>
+
+<p>定时器是一种软件功能，即允许在将来的某个时期，函数在给定的时间间隔用完时被调用。超时（time-out）表示与定时器相关的时间间隔已经用完的那个时刻。</p>
+
+<p>Linux考虑两种类型的定时器，即动态定时器（dynamic timer）和间隔定时器（interval timer）。第一种类型由内核使用，而间隔定时器可以由进程在用户态创建。</p>
+
+<p>延迟函数</p>
+
+<p>当内核需要等待一个较短的时间间隔（比方说，不超过几毫秒）时，就不需要使用软定时器。</p>
+
+<p>开发驱动，需要较短的时间间隔，在以上情况下，内核使用udelay()和ndelay()函数：前者接收一个微妙级的时间间隔作为它的参数，并在指定的延迟结束后返回；后者与前者类似，但是指定的延迟参数是纳秒级的。</p>
+
+<p>本文章参考自《深入理解linux内核》。 <br/>
+本站文章如果没有特别说明，均为<strong>原创</strong>，转载请以<strong>链接</strong>方式注明本文地址：<a href="http://tinyxd.me/blog/2012/07/26/linux-timing-measurements/">http://tinyxd.me/blog/2012/07/26/linux-timing-measurements/</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Tiny</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-26T12:48:00+08:00" pubdate data-updated="true">Jul 26<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/linux/'>linux</a>
+  
+</span>
+
+
+      
+
+<span class="tags">
+  
+     Tag: <a class='tag' href='/tags/kernel/'>kernel</a>, <a class='tag' href='/tags/linux/'>linux</a>, <a class='tag' href='/tags/内核/'>内核</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+
+  
+
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+  
+    <a class="bshareDiv" href="http://www.bshare.cn/share">Sharing</a><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#uuid=5c055483-dee0-46ed-899f-06e078ca57ca&amp;style=999&amp;img=http%3A%2F%2Fstatic.bshare.cn%2Fimages%2Fbuttons%2Fbox-shareTo-zh.gif&amp;w=147&amp;h=21"></script>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/07/25/archlinux-update-about-glibc/" title="Previous Post: archlinux升级出现关于glibc的问题解决办法">&laquo; archlinux升级出现关于glibc的问题解决办法</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/07/26/linux-process-scheduling/" title="Next Post: linux进程调度">linux进程调度 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    
+<section>
+<iframe width="350" height="75" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=350&height=75&fansRow=1&ptype=0&speed=0&skin=1&isTitle=0&noborder=0&isWeibo=0&isFans=0&uid=2328532522&verifier=7efcfd6a&dpc=1"></iframe>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/09/10/job-hunting-2012/">开始找工作了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/02/nginx-ssl/">个人网站上安装SSL证书</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/30/debian-ubuntu-setup-openvpn/">VPS安装openVPN</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/27/use-dropbox-backup-vps-and-database/">用Dropbox备份VPS网站及数据库 </a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/26/imag-file-explorer/">图床管理</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Category Cloud</h1>
+    <span id="tag-cloud"><a href='/blog/categories/davinci' style='font-size: 102.22222222222223%'>Davinci(1)</a> <a href='/blog/categories/embedded' style='font-size: 104.44444444444444%'>Embedded(2)</a> <a href='/blog/categories/essay' style='font-size: 108.88888888888889%'>Essay(4)</a> <a href='/blog/categories/git' style='font-size: 102.22222222222223%'>Git(1)</a> <a href='/blog/categories/it' style='font-size: 104.44444444444444%'>It(2)</a> <a href='/blog/categories/java' style='font-size: 102.22222222222223%'>Java(1)</a> <a href='/blog/categories/linux' style='font-size: 160.0%'>Linux(27)</a> <a href='/blog/categories/octopress' style='font-size: 117.77777777777777%'>Octopress(8)</a> <a href='/blog/categories/php' style='font-size: 102.22222222222223%'>Php(1)</a> <a href='/blog/categories/python' style='font-size: 102.22222222222223%'>Python(1)</a> <a href='/blog/categories/ruby' style='font-size: 106.66666666666667%'>Ruby(3)</a> <a href='/blog/categories/software' style='font-size: 122.22222222222223%'>Software(10)</a> <a href='/blog/categories/vps' style='font-size: 113.33333333333333%'>Vps(6)</a> </span>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Tiny -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+
+-
+<a href="http://tinyxd.me/sitemap.xml">Google Sitemap</a>
+|
+<script src="http://s16.cnzz.com/stat.php?id=4219959&web_id=4219959" language="JavaScript"></script>
+ | 
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ff5ccb6805fc752bf5385b72e8accad49' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+|
+<a href="http://www.prchecker.info/" title="Display Pagerank" target="_blank">
+<img src="http://pr.prchecker.info/getpr.php?codex=aHR0cDovL3Rpbnl4ZC5tZQ==&tag=3" alt="Display Pagerank" style="border:0;" /></a>
+
+</p>
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'tinyxd';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://lkunxyz.github.com/blog/2012/07/26/linux-timing-measurements/';
+        var disqus_url = 'http://lkunxyz.github.com/blog/2012/07/26/linux-timing-measurements/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</body>
+</html>

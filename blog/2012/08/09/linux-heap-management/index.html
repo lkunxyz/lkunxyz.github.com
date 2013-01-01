@@ -1,0 +1,471 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>linux堆的管理 - Keen on Art of Tech</title>
+<meta name="author" content="Tiny">
+
+
+<meta name="description" content="每个Unix进程都拥有一个特殊的线性区，这个线性区就是所谓的堆，堆用于满足进程的动态内存请求。">
+<meta name="keywords" content="heap,堆管理,内核">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://lkunxyz.github.com/blog/2012/08/09/linux-heap-management">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Keen on Art of Tech" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+
+
+
+
+
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32291601-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+<meta name="baidu-site-verification" content="fZnhm9XDDuXJU54V" />
+  <h1><a href="/">Keen on Art of Tech</a></h1>
+  
+    <h2>Stay Hungry,Stay Foolish,Stay Patient.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:lkunxyz.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/categories/essay">Essay</a></li>
+  <li><a href="/tags">Tag Cloud</a></li>
+  <li><a href="/reading-list">Reading List</a></li>
+  <li><a href="/links">Links</a></li>
+  <li><a href="/about">About Me</a></li>
+  <li><a href="/message-board">Message Board</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Linux堆的管理</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-09T18:32:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>每个Unix进程都拥有一个特殊的线性区，这个线性区就是所谓的堆（heap），堆用于满足进程的动态内存请求。内存描述符的start_brk与brk字段分别限定了这个区的开始地址和结束地址。</p>
+
+<!--more-->
+
+
+<p>进程可以使用下面的API来请求和释放动态内存：</p>
+
+<p>malloc（size）</p>
+
+<pre><code>请求size个字节的动态内存。如果分配成功，就返回所分配内存单元第一个字节的线性地址。 
+</code></pre>
+
+<p>calloc（n，size）</p>
+
+<pre><code>请求含有n个大小为size的元素的一个数组。如果分配成功，就把数组元素初始化为0，并返回第一个元素的线性地址。 
+</code></pre>
+
+<p>realloc（ptr，size）</p>
+
+<pre><code>改变由前面的malloc()或calloc()分配的内存区字段的大小。 
+</code></pre>
+
+<p>free（addr）</p>
+
+<pre><code>释放由malloc()或calloc()分配的起始地址为addr的线性区。 
+</code></pre>
+
+<p>brk(addr)</p>
+
+<pre><code>直接修改堆的大小。addr参数指定current-&gt;mm-&gt;brk的新值，返回值是线性区新的结束地址（进程必须检查这个地址和所请求的地址值addr是否一致）。  
+</code></pre>
+
+<p>sbrk(incr)</p>
+
+<pre><code>类似于brk()，不过其中的incr参数指定是增加还是减少以字节为单位的堆大小。 
+</code></pre>
+
+<p>brk()函数和以上列出的函数有所不同，因为它是唯一以系统调用的方式实现的函数，而其他所有的函数都是使用brk()和mmap()系统调用实现的C语言库函数。</p>
+
+<p>当用户态的进程调用brk()系统调用时，内核执行sys_brk(addr)函数。该函数首先验证addr参数是否位干进程代码所在的线性区。如 果 是，则立即返回，因为堆不能与进程代码所在的线性区重叠：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">mm</span> <span class="o">=</span> <span class="n">current</span><span class="o">-&gt;</span><span class="n">mm</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">down_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mm</span><span class="o">-&gt;</span><span class="n">mmap_sem</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">addr</span> <span class="o">&lt;</span> <span class="n">mm</span><span class="o">-&gt;</span><span class="n">end_code</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'><span class="nl">out:</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">up_write</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mm</span><span class="o">-&gt;</span><span class="n">mmap_sem</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="n">mm</span><span class="o">-&gt;</span><span class="n">brk</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>由于brk()系统调用作用于某一个非代码的线性区，它分配和释放完整的页 。因此，该函数把addr的值调整为PAGE_SIZE的倍数，然后把调整的结果与内存描述符的brk字段的值进行比较：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">newbrk</span> <span class="o">=</span> <span class="p">(</span><span class="n">addr</span> <span class="o">+</span> <span class="mh">0xfff</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xfffff000</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">oldbrk</span> <span class="o">=</span> <span class="p">(</span><span class="n">mm</span><span class="o">-&gt;</span><span class="n">brk</span> <span class="o">+</span> <span class="mh">0xfff</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xfffff000</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">oldbrk</span> <span class="o">==</span> <span class="n">newbrk</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">mm</span><span class="o">-&gt;</span><span class="n">brk</span> <span class="o">=</span> <span class="n">addr</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果进程请求缩小堆，则sys_brk()调用do_munmap()函数完成这项任务，然后返回：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">addr</span> <span class="o">&lt;=</span> <span class="n">mm</span><span class="o">-&gt;</span><span class="n">brk</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">do_munmap</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">newbrk</span><span class="p">,</span> <span class="n">oldbrk</span><span class="o">-</span><span class="n">newbrk</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">mm</span><span class="o">-&gt;</span><span class="n">brk</span> <span class="o">=</span> <span class="n">addr</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果进程请求扩大堆，则sys_brk()首先检查是否允许进程这样做。如果进程企图分配在其跟制范围之外的内存，函数并不多分配内存，只简单地返回mm->brk的原有值：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">rlim</span> <span class="o">=</span> <span class="n">current</span><span class="o">-&gt;</span><span class="n">signal</span><span class="o">-&gt;</span><span class="n">rlim</span><span class="p">[</span><span class="n">RLIMIT_DATA</span><span class="p">].</span><span class="n">rlim_cur</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">rlim</span> <span class="o">&lt;</span> <span class="n">RLIM_INFINITY</span> <span class="o">&amp;&amp;</span> <span class="n">addr</span> <span class="o">-</span> <span class="n">mm</span><span class="o">-&gt;</span><span class="n">start_data</span> <span class="o">&gt;</span> <span class="n">rlim</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>然后，函数检查扩大后的堆是否和进程的其他线性区相重叠，如果是，不做任何事情就返回：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">find_vma_intersection</span><span class="p">(</span><span class="n">mm</span><span class="p">,</span> <span class="n">oldbrk</span><span class="p">,</span> <span class="n">newbrk</span><span class="o">+</span><span class="n">PAGE_SIZE</span><span class="p">))</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果一切都顺利，则调用do_brk()函数。如果它返回oldbrk,则分配成功且sys_brt()函数返回addr的值；否则，返回旧的mm->brk值：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">do_brk</span><span class="p">(</span><span class="n">oldbrk</span><span class="p">,</span> <span class="n">newbrk</span><span class="o">-</span><span class="n">oldbrk</span><span class="p">)</span> <span class="o">==</span> <span class="n">oldbrk</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">mm</span><span class="o">-&gt;</span><span class="n">brk</span> <span class="o">=</span> <span class="n">addr</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">goto</span> <span class="n">out</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>do_brk()函数实际上是仅处理匿名线性区的do_mmap()的简化版。可以认为它的调用等价于：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='c'><span class='line'><span class="n">do_mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">oldbrk</span><span class="p">,</span> <span class="n">newbrk</span><span class="o">-</span><span class="n">oldbrk</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="o">|</span><span class="n">PROT_WRITE</span><span class="o">|</span><span class="n">PROT_EXEC</span><span class="p">,</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="n">MAP_FIXED</span><span class="o">|</span><span class="n">MAP_PRIVATE</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>当然，do_brk()比do_mmap()稍快，因为前者假定线性区不映射磁盘上的文件，从而避免了检查线性区对象的几个字段。</p>
+
+<p>本文参考《深入理解linux内核》。 <br/>
+本文地址：<a href="http://tinyxd.me/blog/2012/08/09/linux-heap-management/">http://tinyxd.me/blog/2012/08/09/linux-heap-management/</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Tiny</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-09T18:32:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/linux/'>linux</a>
+  
+</span>
+
+
+      
+
+<span class="tags">
+  
+     Tag: <a class='tag' href='/tags/kernel/'>kernel</a>, <a class='tag' href='/tags/linux/'>linux</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+
+  
+
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+  
+    <a class="bshareDiv" href="http://www.bshare.cn/share">Sharing</a><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#uuid=5c055483-dee0-46ed-899f-06e078ca57ca&amp;style=999&amp;img=http%3A%2F%2Fstatic.bshare.cn%2Fimages%2Fbuttons%2Fbox-shareTo-zh.gif&amp;w=147&amp;h=21"></script>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/08/08/linux-system-calls/" title="Previous Post: linux系统调用">&laquo; linux系统调用</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/08/14/vps-lnmp-setup-and-typecho-blog/" title="Next Post: VPS申请及博客搭建">VPS申请及博客搭建 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    
+<section>
+<iframe width="350" height="75" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=350&height=75&fansRow=1&ptype=0&speed=0&skin=1&isTitle=0&noborder=0&isWeibo=0&isFans=0&uid=2328532522&verifier=7efcfd6a&dpc=1"></iframe>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/09/10/job-hunting-2012/">开始找工作了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/02/nginx-ssl/">个人网站上安装SSL证书</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/30/debian-ubuntu-setup-openvpn/">VPS安装openVPN</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/27/use-dropbox-backup-vps-and-database/">用Dropbox备份VPS网站及数据库 </a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/26/imag-file-explorer/">图床管理</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Category Cloud</h1>
+    <span id="tag-cloud"><a href='/blog/categories/davinci' style='font-size: 102.22222222222223%'>Davinci(1)</a> <a href='/blog/categories/embedded' style='font-size: 104.44444444444444%'>Embedded(2)</a> <a href='/blog/categories/essay' style='font-size: 108.88888888888889%'>Essay(4)</a> <a href='/blog/categories/git' style='font-size: 102.22222222222223%'>Git(1)</a> <a href='/blog/categories/it' style='font-size: 104.44444444444444%'>It(2)</a> <a href='/blog/categories/java' style='font-size: 102.22222222222223%'>Java(1)</a> <a href='/blog/categories/linux' style='font-size: 160.0%'>Linux(27)</a> <a href='/blog/categories/octopress' style='font-size: 117.77777777777777%'>Octopress(8)</a> <a href='/blog/categories/php' style='font-size: 102.22222222222223%'>Php(1)</a> <a href='/blog/categories/python' style='font-size: 102.22222222222223%'>Python(1)</a> <a href='/blog/categories/ruby' style='font-size: 106.66666666666667%'>Ruby(3)</a> <a href='/blog/categories/software' style='font-size: 122.22222222222223%'>Software(10)</a> <a href='/blog/categories/vps' style='font-size: 113.33333333333333%'>Vps(6)</a> </span>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Tiny -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+
+-
+<a href="http://tinyxd.me/sitemap.xml">Google Sitemap</a>
+|
+<script src="http://s16.cnzz.com/stat.php?id=4219959&web_id=4219959" language="JavaScript"></script>
+ | 
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ff5ccb6805fc752bf5385b72e8accad49' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+|
+<a href="http://www.prchecker.info/" title="Display Pagerank" target="_blank">
+<img src="http://pr.prchecker.info/getpr.php?codex=aHR0cDovL3Rpbnl4ZC5tZQ==&tag=3" alt="Display Pagerank" style="border:0;" /></a>
+
+</p>
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'tinyxd';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://lkunxyz.github.com/blog/2012/08/09/linux-heap-management/';
+        var disqus_url = 'http://lkunxyz.github.com/blog/2012/08/09/linux-heap-management/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</body>
+</html>

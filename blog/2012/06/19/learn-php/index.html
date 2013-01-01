@@ -1,0 +1,364 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>php初学 - Keen on Art of Tech</title>
+<meta name="author" content="Tiny">
+
+
+<meta name="description" content="php learning">
+<meta name="keywords" content="php">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://lkunxyz.github.com/blog/2012/06/19/learn-php">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Keen on Art of Tech" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+
+
+
+
+
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32291601-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+<meta name="baidu-site-verification" content="fZnhm9XDDuXJU54V" />
+  <h1><a href="/">Keen on Art of Tech</a></h1>
+  
+    <h2>Stay Hungry,Stay Foolish,Stay Patient.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:lkunxyz.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/categories/essay">Essay</a></li>
+  <li><a href="/tags">Tag Cloud</a></li>
+  <li><a href="/reading-list">Reading List</a></li>
+  <li><a href="/links">Links</a></li>
+  <li><a href="/about">About Me</a></li>
+  <li><a href="/message-board">Message Board</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Php初学</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-19T20:28:00+08:00" pubdate data-updated="true">Jun 19<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>1.搭建学习环境 采用简单的打包好的：lamp. <br/>
+<a href="https://help.ubuntu.com/community/ApacheMySQLPHP#Run.2C_Stop.2C_Test.2C_And_Restart_Apache">help web sites</a></p>
+
+<p>2.PHP中文手册 <br/>
+http://www.phpchina.com/resource/manual/phpnew/</p>
+
+<!--more-->
+
+
+<p>example： <br/>
+第一个 PHP 脚本：hello.php</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='php'><span class='line'><span class="x">&lt;html&gt;</span>
+</span><span class='line'><span class="x"> &lt;head&gt;</span>
+</span><span class='line'><span class="x">  &lt;title&gt;PHP 测试&lt;/title&gt;</span>
+</span><span class='line'><span class="x"> &lt;/head&gt;</span>
+</span><span class='line'><span class="x"> &lt;body&gt;</span>
+</span><span class='line'><span class="x"> </span><span class="cp">&lt;?php</span> <span class="k">echo</span> <span class="s1">&#39;&lt;p&gt;Hello World</span>
+</span><span class='line'><span class="s1">&#39;</span><span class="p">;</span> <span class="cp">?&gt;</span><span class="x"></span>
+</span><span class='line'><span class="x"> &lt;/body&gt;</span>
+</span><span class='line'><span class="x">&lt;/html&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>PHP基本语法：</p>
+
+<p>四种标量类型：</p>
+
+<ul>
+<li> boolean （布尔型）</li>
+<li> integer （整型）</li>
+<li> float （浮点型, 也称作 double)</li>
+<li> string （字符串）</li>
+</ul>
+
+
+<p>两种复合类型：</p>
+
+<ul>
+<li> array （数组）</li>
+<li> object （对象）</li>
+</ul>
+
+
+<p>最后是两种特殊类型：</p>
+
+<ul>
+<li> resource　（资源）</li>
+<li> NULL　（NULL）</li>
+</ul>
+
+
+<p>为了确保代码的易读性，本手册还介绍了一些伪类型：</p>
+
+<ul>
+<li> mixed</li>
+<li> number</li>
+<li> callback</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Tiny</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-19T20:28:00+08:00" pubdate data-updated="true">Jun 19<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/php/'>php</a>
+  
+</span>
+
+
+      
+
+<span class="tags">
+  
+     Tag: <a class='tag' href='/tags/php/'>php</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+
+  
+
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+  
+    <a class="bshareDiv" href="http://www.bshare.cn/share">Sharing</a><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#uuid=5c055483-dee0-46ed-899f-06e078ca57ca&amp;style=999&amp;img=http%3A%2F%2Fstatic.bshare.cn%2Fimages%2Fbuttons%2Fbox-shareTo-zh.gif&amp;w=147&amp;h=21"></script>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/06/18/debianan-zhuang-nvidiaxian-qia-qu-dong/" title="Previous Post: debian安装nvidia显卡驱动">&laquo; debian安装nvidia显卡驱动</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/06/19/seo-meta-octopress/" title="Next Post: 给octopress添加关键字和网站描述">给octopress添加关键字和网站描述 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    
+<section>
+<iframe width="350" height="75" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=350&height=75&fansRow=1&ptype=0&speed=0&skin=1&isTitle=0&noborder=0&isWeibo=0&isFans=0&uid=2328532522&verifier=7efcfd6a&dpc=1"></iframe>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/09/10/job-hunting-2012/">开始找工作了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/02/nginx-ssl/">个人网站上安装SSL证书</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/30/debian-ubuntu-setup-openvpn/">VPS安装openVPN</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/27/use-dropbox-backup-vps-and-database/">用Dropbox备份VPS网站及数据库 </a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/26/imag-file-explorer/">图床管理</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Category Cloud</h1>
+    <span id="tag-cloud"><a href='/blog/categories/davinci' style='font-size: 102.22222222222223%'>Davinci(1)</a> <a href='/blog/categories/embedded' style='font-size: 104.44444444444444%'>Embedded(2)</a> <a href='/blog/categories/essay' style='font-size: 108.88888888888889%'>Essay(4)</a> <a href='/blog/categories/git' style='font-size: 102.22222222222223%'>Git(1)</a> <a href='/blog/categories/it' style='font-size: 104.44444444444444%'>It(2)</a> <a href='/blog/categories/java' style='font-size: 102.22222222222223%'>Java(1)</a> <a href='/blog/categories/linux' style='font-size: 160.0%'>Linux(27)</a> <a href='/blog/categories/octopress' style='font-size: 117.77777777777777%'>Octopress(8)</a> <a href='/blog/categories/php' style='font-size: 102.22222222222223%'>Php(1)</a> <a href='/blog/categories/python' style='font-size: 102.22222222222223%'>Python(1)</a> <a href='/blog/categories/ruby' style='font-size: 106.66666666666667%'>Ruby(3)</a> <a href='/blog/categories/software' style='font-size: 122.22222222222223%'>Software(10)</a> <a href='/blog/categories/vps' style='font-size: 113.33333333333333%'>Vps(6)</a> </span>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Tiny -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+
+-
+<a href="http://tinyxd.me/sitemap.xml">Google Sitemap</a>
+|
+<script src="http://s16.cnzz.com/stat.php?id=4219959&web_id=4219959" language="JavaScript"></script>
+ | 
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ff5ccb6805fc752bf5385b72e8accad49' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+|
+<a href="http://www.prchecker.info/" title="Display Pagerank" target="_blank">
+<img src="http://pr.prchecker.info/getpr.php?codex=aHR0cDovL3Rpbnl4ZC5tZQ==&tag=3" alt="Display Pagerank" style="border:0;" /></a>
+
+</p>
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'tinyxd';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://lkunxyz.github.com/blog/2012/06/19/learn-php/';
+        var disqus_url = 'http://lkunxyz.github.com/blog/2012/06/19/learn-php/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</body>
+</html>

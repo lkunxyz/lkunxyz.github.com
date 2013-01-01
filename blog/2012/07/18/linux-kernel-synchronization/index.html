@@ -1,0 +1,367 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>linux内核同步 - Keen on Art of Tech</title>
+<meta name="author" content="Tiny">
+
+
+<meta name="description" content="linux内核同步机制">
+<meta name="keywords" content="linux,kernel,内核,同步,synchronization">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://lkunxyz.github.com/blog/2012/07/18/linux-kernel-synchronization">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Keen on Art of Tech" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href='http://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+
+
+
+
+
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-32291601-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+<meta name="baidu-site-verification" content="fZnhm9XDDuXJU54V" />
+  <h1><a href="/">Keen on Art of Tech</a></h1>
+  
+    <h2>Stay Hungry,Stay Foolish,Stay Patient.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:lkunxyz.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Home</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/blog/categories/essay">Essay</a></li>
+  <li><a href="/tags">Tag Cloud</a></li>
+  <li><a href="/reading-list">Reading List</a></li>
+  <li><a href="/links">Links</a></li>
+  <li><a href="/about">About Me</a></li>
+  <li><a href="/message-board">Message Board</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Linux内核同步</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-18T15:57:00+08:00" pubdate data-updated="true">Jul 18<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>内核抢占</h2>
+
+<p>抢占内核的主要特点是：一个在内核态运行的进程，可能在执行内核函数期间被另外一个进程取代。 <br/>
+只有当内核正在执行异常处理程序（尤其是系统调用），而且内核抢占没有被显式地禁用时，才可能抢占内核。 <br/>
+内核使用的各种同步技术：每CPU变量、原子操作、内存屏障、自旋锁、信号量、顺序锁、本地中断的禁止、本地软中断的禁止、读-拷贝-更新（RCU）。</p>
+
+<h2>每CPU变量</h2>
+
+<p>主要是数据结构的数组，系统的每个CPU对应数组的一个元素。 <br/>
+一个CPU不应该访问与其他CPU对应的数组元素。另外，它可以随意读或修改它自己的元素而不用担心出现竞争条件，因为它是唯一有资格这么做的CPU。在单处理器和多处理器系统中，内核抢占都可能使每CPU变量产生竞争条件。总的原则是内核控制路径应该在禁用抢占的情况下访问每CPU变量。</p>
+
+<!--more-->
+
+
+<h2>原子操作</h2>
+
+<p>若干汇编语言指令具有“读-修改-写”类型&#8212;-也就是说，它们访问存储器单元两次，第一次读原值，第二次写新值。 <br/>
+Linux内核提供了一个专门的atomic_t类型（一个原子计数器）和一些专门的函数和宏。在多处理器系统中，每条这样的指令都有一个lock字节（“锁定内存总线，直到这条指令执行完成”）的前缀。</p>
+
+<h2>优化和内存屏障</h2>
+
+<p>当使用优化的编译器时，编译器为了优化可能会重新安排汇编语言指令以便寄存器以最优的方式使用。 <br/>
+内存屏障（memory barrier）原语确保，在原语之后的操作开始执行之前，原语之前的操作已经完成。</p>
+
+<h2>自旋锁</h2>
+
+<p>自旋锁（spin lock）是用来在多处理器环境中工作的一种特殊的锁。如果内核控制路径发现自旋锁“开着”，就获取锁并继续自己的执行。相反，如果内核控制路径发现锁由运行在另一个CPU上的内核控制路径“锁着”，就在周围“旋转”。反复执行一条紧凑的循环指令，直到锁被释放。   <br/>
+一般来说，由自旋锁所保护的每个临界区都是禁止内核抢占的。在单处理器系统上，这种锁本身并不起锁的作用，自旋锁原语仅仅是禁止或启用内核抢占。  <br/>
+在linux中，每个自旋锁都用spinlock_t结构表示，其中包含两个字段：</p>
+
+<p>1.slock&#8212;-表示自旋锁的状态。（1&#8211;未加锁  负数和0&#8211;加锁） <br/>
+2.break_lock&#8212;-表示进程正在忙等自旋锁（只在内核支持SMP和内核抢占的情况下使用该标志）</p>
+
+<p>读写自旋锁的引入是为了增加内核的并发能力。只要没有内核控制路径堆数据结构进行修改，读写自旋锁就允许多个内核控制路径读同一数据结构。允许对数据结构并发度可以提高系统性能。 <br/>
+顺序锁：与读写自旋锁非常相似，只是它为写者赋予了较高的优先级；事实上，即使在读者正在读的时候也允许写者继续运行。这种策略的好处是写者永远不会等待（除非另外一个写者正在写），缺点是有些时候读者不得不反复多次读相同的数据直到获得有效的副本。 <br/>
+当读者进入临界区时，不必禁用内核抢占；另一方面，由于写者获取自旋锁，所以它进入临界区时自动禁用内核抢占。 <br/>
+一般来说，在满足以下条件时才能使用顺序锁：</p>
+
+<p>1.被保护的数据结构不包括被写者修改和被读者间接引用的指针（否则，写者可能在读者的眼鼻下就修改指针）。 <br/>
+2.读者的临界区代码没有副作用（否则，多个读者的操作会与单独的读操作有不同的结果）。</p>
+
+<h2>读-拷贝-更新（RCU）</h2>
+
+<p>读-拷贝-更新（RCU）是为了保护在多数情况下被多个CPU读的数据结构而设计的另一种同步技术。RCU允许多个读者和写者并发执行，RCU不使用锁，就是说它不使用被所有CPU共享的锁或计数器。  <br/>
+RCU同步的关键思想是：</p>
+
+<p>1.RCU只保护被动态分配并通过指针引用的数据结构。 <br/>
+2.在被RCU保护的临界区中，任何内核控制路径都不能睡眠。</p>
+
+<p>使用RCU技术的真正困难在于：写者修改指针时不能立即释放数据结构的旧副本。实际上，写着开始修改时，正在访问数据结构的读者可能还在读旧副本。只有在CPU上的所有（潜在的）读者都执行完宏rcu_read_unlock()之后，才可以释放旧副本。 <br/>
+RCU是Linux2.6中新加的功能，用在网络层和虚拟文件系统中。</p>
+
+<h2>信号量</h2>
+
+<p>Linux提供两种信号量：</p>
+
+<p>1.内核信号量，由内核控制路径使用 <br/>
+2.Systerm V IPC 信号量，由用户态进程使用</p>
+
+<p>内核信号量：类似于自旋锁，因为当锁关闭着时，它不允许内核控制路径继续进行。只有可以睡眠的函数才能获取内核信号量；中断处理程序和可延迟函数都不能使用内核控制量。 <br/>
+内核信号量是struct semaphore类型的对象。 <br/>
+TASK_INTERRUPTIBLE是可以被信号和wake_up()唤醒的，当信号到来时，进程会被设置为可运行。 <br/>
+而TASK_UNINTERRUPTIBLE只能被wake_up()唤醒。 <br/>
+读/写信号量：类似于前面的“读写自旋锁”，有一点不同的是，在信号量再次变为打开之前，等待进程挂起而不是自旋。内核以严格的FIFO顺序处理等待读写信号量的所有进程。 <br/>
+每个读写信号量都是有rw_semaphore结构描述的。 <br/>
+补充原语（completion）：其和信号量之间的真正区别在于如何使用等待队列中包含的自旋锁。在补充原语中，自旋锁用来确保complete()和wait_for_completion()不会并发执行。在信号量中，自旋锁用于避免并发执行的down()函数弄乱信号量的数据结构。</p>
+
+<br />
+
+
+<p>本文章参考自《深入理解linux内核》。 <br/>
+本站文章如果没有特别说明，均为<strong>原创</strong>，转载请以<strong>链接</strong>方式注明本文地址：<a href="http://tinyxd.me/blog/2012/07/18/linux-kernel-synchronization/">http://tinyxd.me/blog/2012/07/18/linux-kernel-synchronization/</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Tiny</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-18T15:57:00+08:00" pubdate data-updated="true">Jul 18<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/linux/'>linux</a>
+  
+</span>
+
+
+      
+
+<span class="tags">
+  
+     Tag: <a class='tag' href='/tags/kernel/'>kernel</a>, <a class='tag' href='/tags/linux/'>linux</a>, <a class='tag' href='/tags/内核/'>内核</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+
+  
+
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+  
+  
+    <a class="bshareDiv" href="http://www.bshare.cn/share">Sharing</a><script type="text/javascript" charset="utf-8" src="http://static.bshare.cn/b/buttonLite.js#uuid=5c055483-dee0-46ed-899f-06e078ca57ca&amp;style=999&amp;img=http%3A%2F%2Fstatic.bshare.cn%2Fimages%2Fbuttons%2Fbox-shareTo-zh.gif&amp;w=147&amp;h=21"></script>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2012/07/16/archlinux-wireless-network-connection/" title="Previous Post: archlinux 无线网络连接">&laquo; archlinux 无线网络连接</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2012/07/25/archlinux-update-about-glibc/" title="Next Post: archlinux升级出现关于glibc的问题解决办法">archlinux升级出现关于glibc的问题解决办法 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    
+<section>
+<iframe width="350" height="75" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=350&height=75&fansRow=1&ptype=0&speed=0&skin=1&isTitle=0&noborder=0&isWeibo=0&isFans=0&uid=2328532522&verifier=7efcfd6a&dpc=1"></iframe>
+</section>
+<section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/09/10/job-hunting-2012/">开始找工作了</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/09/02/nginx-ssl/">个人网站上安装SSL证书</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/30/debian-ubuntu-setup-openvpn/">VPS安装openVPN</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/27/use-dropbox-backup-vps-and-database/">用Dropbox备份VPS网站及数据库 </a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2012/08/26/imag-file-explorer/">图床管理</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Category Cloud</h1>
+    <span id="tag-cloud"><a href='/blog/categories/davinci' style='font-size: 102.22222222222223%'>Davinci(1)</a> <a href='/blog/categories/embedded' style='font-size: 104.44444444444444%'>Embedded(2)</a> <a href='/blog/categories/essay' style='font-size: 108.88888888888889%'>Essay(4)</a> <a href='/blog/categories/git' style='font-size: 102.22222222222223%'>Git(1)</a> <a href='/blog/categories/it' style='font-size: 104.44444444444444%'>It(2)</a> <a href='/blog/categories/java' style='font-size: 102.22222222222223%'>Java(1)</a> <a href='/blog/categories/linux' style='font-size: 160.0%'>Linux(27)</a> <a href='/blog/categories/octopress' style='font-size: 117.77777777777777%'>Octopress(8)</a> <a href='/blog/categories/php' style='font-size: 102.22222222222223%'>Php(1)</a> <a href='/blog/categories/python' style='font-size: 102.22222222222223%'>Python(1)</a> <a href='/blog/categories/ruby' style='font-size: 106.66666666666667%'>Ruby(3)</a> <a href='/blog/categories/software' style='font-size: 122.22222222222223%'>Software(10)</a> <a href='/blog/categories/vps' style='font-size: 113.33333333333333%'>Vps(6)</a> </span>
+</section>
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - Tiny -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+
+-
+<a href="http://tinyxd.me/sitemap.xml">Google Sitemap</a>
+|
+<script src="http://s16.cnzz.com/stat.php?id=4219959&web_id=4219959" language="JavaScript"></script>
+ | 
+<script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Ff5ccb6805fc752bf5385b72e8accad49' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+|
+<a href="http://www.prchecker.info/" title="Display Pagerank" target="_blank">
+<img src="http://pr.prchecker.info/getpr.php?codex=aHR0cDovL3Rpbnl4ZC5tZQ==&tag=3" alt="Display Pagerank" style="border:0;" /></a>
+
+</p>
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'tinyxd';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://lkunxyz.github.com/blog/2012/07/18/linux-kernel-synchronization/';
+        var disqus_url = 'http://lkunxyz.github.com/blog/2012/07/18/linux-kernel-synchronization/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+</body>
+</html>

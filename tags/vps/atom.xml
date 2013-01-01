@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: vps | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/vps/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[个人网站上安装SSL证书]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/09/02/nginx-ssl/"/>
+    <updated>2012-09-02T22:45:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/09/02/nginx-ssl</id>
+    <content type="html"><![CDATA[<p>SSL(Secure Sockets Layer 安全套接层),及其继任者传输层安全（Transport Layer Security，TLS）是为网络通信提供安全及数据完整性的一种安全协议。TLS与SSL在传输层对网络连接进行加密。   <br/>
+HTTPS（Secure Hypertext Transfer Protocol）安全超文本传输协议，HTTPS应用了Netscape的完全套接字层（SSL）作为HTTP应用层的子层。（HTTPS使用端口443，而不是象HTTP那样使用端口80来和TCP/IP进行通信。）   <br/>
+建个网站不容易，各种都要收费，那么有免费的当然就更好了！免费的SSL证书：<a href="https://www.startssl.com/">StartSSL</a>来了！ <br/>
+1.进入StartSSL<a href="https://www.startssl.com/">官网</a>，点击左上角<code>Sign-up For Free</code>（这个很容易找，就不截图了<code>^_^</code>）。按要求填写注册信息，<code>First, Last Name</code>这一栏填写自己的中文名字的拼音，地址精确到房间号或者街道号（要不然客服发来邮件会索要地址的）。 <br/>
+2.注册成功后，StartSSL会发送一个链接给你，还有验证码。因为StartSSL使用证书验证的，所以，要把验证证书好好保管好，丢了就没法登陆了。 <br/>
+3.进入<code>Control Panel</code>之后，点击<code>Validations Wizard</code>，域名验证<code>Domain Name Validation</code>,填入你需要添加SSL的域名，还有你的个人邮箱（会给你发封邮件，里面有验证码，注意接收）。 <br/>
+4.验证完域名后，点击<code>Certificates Wizard</code>--<code>Web Server SSL/TLS Certificate</code>。</p>
+
+<!--more-->
+
+
+<p><strong>生成私钥（Generate Private Key）</strong> <br/>
+如果你已经在VPS上生成了私钥，这一步可以跳过，没有的话，可以在这里生成，填入私钥的密码，将文本框中的内容复制，保存为<code>ssl.key</code>。 <br/>
+<strong>生成证书</strong>  <br/>
+选择你需要绑定的二级域名，比如<code>www.tinyxd.me</code>,<code>Tool Box</code>--<code>Retrieve Certificate</code>,同样将文本框中的内容复制另存为<code>ssl.crt</code>。  <br/>
+<strong>登录VPS，生成服务器密钥/证书</strong>  <br/>
+生成<code>server.key</code></p>
+
+<pre><code>openssl rsa -in ssl.key -out server.key
+</code></pre>
+
+<p>生成<code>server.crt</code>  <br/>
+<code>bash
+cp ssl.crt server.crt
+wget http://cert.startssl.com/certs/ca.pem
+wget http://cert.startssl.com/certs/sub.class1.server.ca.pem
+cat ca.pem sub.class1.server.ca.pem &gt;&gt; ca-certs.crt
+cat ca-certs.crt &gt;&gt; server.crt
+</code>
+<strong>修改nginx配置文件</strong>  <br/>
+将<code>server.key</code>和<code>server.crt</code>放到<code>/usr/local/nginx/certs/</code>目录下，修改<code>/usr/local/nginx/conf/vhost/</code>对应域名虚拟机的配置文件，添加如下内容： <br/>
+<code>
+server {
+listen 80;
+server_name www.域名.com;
+rewrite ^(.*) https://$server_name$1 permanent;
+}
+server {
+listen 443;
+server_name www.域名.com;
+root /home/www;
+ssl on;
+ssl_certificate /usr/local/nginx/certs/server.crt;
+ssl_certificate_key /usr/local/nginx/certs/server.key;
+}
+</code>
+上面脚本的<code>rewrite ^(.*) https://$server_name$1 permanent;</code>如果不填加的话，你的网站将可以进行http和https的两种访问。  <br/>
+最后重启Nginx，<code>/usr/local/nginx restart</code> 。访问你的网站，看是不是支持https访问了！ <br/>
+本文参考：<a href="http://ichon.me/2012/5/29/nginx-ssl.html">http://ichon.me/2012/5/29/nginx-ssl.html</a>和<a href="http://baike.baidu.com/view/16147.htm">http://baike.baidu.com/view/16147.htm</a></p>
+
+<br />
+
+
+<p>本文地址：<a href="http://tinyxd.me/blog/2012/09/02/nginx-ssl/">http://tinyxd.me/blog/2012/09/02/nginx-ssl/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[VPS安装openVPN]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/30/debian-ubuntu-setup-openvpn/"/>
+    <updated>2012-08-30T12:24:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/30/debian-ubuntu-setup-openvpn</id>
+    <content type="html"><![CDATA[<p>首先，你得有VPS或者独立服务器。 <br/>
+因为我的VPS是openVZ的，查资料发现新的openVZ的VPS是支持PPTP的。不过鉴于安全性的考虑我还是使用openVPN。 <br/>
+本文后面会介绍在debian 6下面安装openvpn的一些注意事项以及在xp下面安装openVPN。</p>
+
+<h2>使用一键安装包来安装openVPN   </h2>
+
+<p>1.检查你的VPS是否支持Tun/Tap/nat/ppp，登录VPS检查</p>
+
+<pre><code>cat /dev/net/tun
+</code></pre>
+
+<p>如果返回 <code>cat: /dev/net/tun: File descriptor in bad state</code> 说明tun是可用的。</p>
+
+<pre><code>iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o venet0 -j MASQUERADE
+</code></pre>
+
+<p>如果返回<code>iptables: No chain/target/match by that name</code>说明nat也是可以用的。</p>
+
+<!--more-->
+
+
+<p>如果返回结果不是以上描述的，那么说明你的VPS服务商默认没有开通。你可以发ticket要求VPS提供商提供这个，我的VPS就没有提供这个，就发了ticket，不过很快就解决了。 <br/>
+2.检查服务器的DNS</p>
+
+<pre><code>vi /etc/resolv.conf
+</code></pre>
+
+<p>可以使用  <br/>
+OpenDNS提供的DNS服务器地址
+　　208.67.222.222
+　　208.67.220.220
+Google提供的DNS服务</p>
+
+<pre><code>8.8.8.8
+8.8.4.4
+</code></pre>
+
+<p>3.下载John Malkowski的Debian OpenVPN脚本。</p>
+
+<pre><code>wget http://vpsnoc.com/scripts/debian-openvpn.sh
+chmod +x debian-openvpn.sh
+./debian-openvpn.sh
+</code></pre>
+
+<p>连续填写server和client的信息，出现y/n的时候都选择y。 <br/>
+然后把生成的<code>keys.tgz</code>下载自本地。</p>
+
+<h2>不使用一键安装包，一步步自己安装</h2>
+
+<p>以下内容参考了：<a href="http://www.vpser.net/build/linode-install-openvpn.html">VPS侦探 Linode VPS OpenVPN安装配置教程(基于Debian/Ubuntu)</a>    <br/>
+1.安装</p>
+
+<pre><code>apt-get install openvpn udev lzop
+</code></pre>
+
+<p>2.OpenVPN提供了”easy-rsa”这套加密方面的工具openvpn安装好之后easy-rsa在/usr/share/doc/openvpn/examples/easy-rsa/文件夹中为了使OpenVPN正常工作需要把easy-rsa复制到/etc/openvpn中.运行下列命令:</p>
+
+<pre><code>#cp -R /usr/share/doc/openvpn/examples/easy-rsa/ /etc/openvpn
+</code></pre>
+
+<p>在<code>/etc/openvpn/easy-rsa/2.0/</code>中设置，基本所有的OpenVPN配置都在这。 <br/>
+生产CA证书： <br/>
+<code>
+cd /etc/openvpn/easy-rsa/2.0
+source vars
+./clean-all
+./build-ca
+</code>
+<code>./build-ca</code>时会提示输入一些信息，可以都直接回车按默认信息。 <br/>
+3.生成服务器端证书和密钥：</p>
+
+<pre><code>./build-key-server server
+</code></pre>
+
+<p>有两次需要输入y。 <br/>
+4.生产客户端证书和密钥：</p>
+
+<pre><code>./build-key client
+</code></pre>
+
+<p>生成的证书和密钥在<code>/etc/openvpn/easy-rsa/2.0/keys/</code>下面。 <br/>
+5.生成Diffie Hellman参数：</p>
+
+<pre><code>./build-dh
+</code></pre>
+
+<p>6.安装配置openVPN客户端    详情见参考。</p>
+
+<h2>windows客户端下载</h2>
+
+<p>1.下载OpenVPN：<a href="http://www.openvpn.net/index.php/open-source/downloads.html">http://www.openvpn.net/index.php/open-source/downloads.html</a>下载最新版本安装包。 <br/>
+2.安装，建议win7/vista用户安装到非系统分区。
+3.修改虚拟网卡DNS，Google DNS :8.8.8.8和 8.8.4.4；OpenDNS的208.67.222.222 和208.67.220.220。 <br/>
+4.将keys.tgz解压至openVPN安装目录下的config目录。 <br/>
+5.运行openVPN。 <br/>
+6.如果没有什么差错的话至此安装成功。 <br/>
+可以进<a href="http://www.dnsstuff.com">http://www.dnsstuff.com</a> 或者facebook/twitter等测试下。惊喜等着你哦！ <br/>
+如果需要和你的朋友分享这个，可以新建个用户，重新生成客户端证书。 <br/>
+<code>
+cd /etc/openvpn/easy-rsa/2.0
+ ./vars
+./build-key user1
+</code>
+将新生成的user1.crt,user1.key,user1.csr三个文件和*.ovpn和ca.crt、ca.key三个文件一起下载到本地，编辑下载下来的<code>*.ovpn</code>文件将其中的<code>cert client1.crt</code>和<code>key client1.key</code>修改为：<code>cert user1.crt</code>和<code>key user1.key</code>。  <br/>
+把以上文件，打包发送给你的朋友。并将其解压到config目录下。</p>
+
+<br />
+
+
+<p>本文地址：<a href="http://tinyxd.me/blog/2012/08/30/debian-ubuntu-setup-openvpn/">http://tinyxd.me/blog/2012/08/30/debian-ubuntu-setup-openvpn/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[用Dropbox备份VPS网站及数据库 ]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/27/use-dropbox-backup-vps-and-database/"/>
+    <updated>2012-08-27T23:28:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/27/use-dropbox-backup-vps-and-database</id>
+    <content type="html"><![CDATA[<p>用SSH客户端（PuTTY）登陆，进入root目录：</p>
+
+<pre><code>cd ~
+</code></pre>
+
+<p>linux下用ssh登录：</p>
+
+<pre><code>ssh (ip) -l (用户名) -p (端口号)
+或者
+ssh username@ip
+或者  
+ssh username@domain
+</code></pre>
+
+<p>下载dropbox程序： <br/>
+32位版本：</p>
+
+<pre><code>wget -O dropbox.tar.gz http://www.dropbox.com/download/?plat=lnx.x86
+</code></pre>
+
+<p>64位版本：</p>
+
+<pre><code>wget -O - "https://www.dropbox.com/download?plat=lnx.x86_64
+</code></pre>
+
+<!--more-->
+
+
+<p>解压缩：</p>
+
+<pre><code>    tar -zxof dropbox.tar.gz
+</code></pre>
+
+<p>然后第一次运行dropbox：</p>
+
+<pre><code>    ~/.dropbox-dist/dropboxd &amp;
+</code></pre>
+
+<p>运行后会出现一串URL地址，把这个复制到流量器上，跟你的dropbox账户进行绑定。
+绑定好之后就可以开始同步了。 <br/>
+首先进入dropbox，</p>
+
+<pre><code>   cd ~/Dropbox
+</code></pre>
+
+<p>备份整个wwwroot目录，建立一个软连接：</p>
+
+<pre><code>    ln -s /home/wwwroot
+</code></pre>
+
+<p>由于dropbox耗费的内存确实够大，建议不要开太长时间 <br/>
+<img src="http://upload.tinyxd.me/2012/08/dropboxload.jpg"  alt="dropboxload" width="778" height="200"> <br/>
+如果上面操作没有错误的话，在dropbox就可以看到同步的文件了。 <br/>
+附别人写的一个脚本：
+``` bash dropboxbak.sh</p>
+
+<pre><code>   #!/bin/sh
+    BACKUP_SRC="/root/Dropbox"  #用于同步的本地目录
+    BACKUP_WWW="/home/wwwroot"     #你的网站目录
+    NOW=$(date +"%Y.%m.%d")
+    MYSQL_SERVER="127.0.0.1"
+    MYSQL_USER="user"
+    MYSQL_PASS="password"
+    DAY=$(date +"%u")             #取当前星期，1表示周一
+    start() {
+   echo starting bak SQL
+    #dump数据库数据，以及备份网站整站文件
+    mysqldump -u $MYSQL_USER -h $MYSQL_SERVER -p$MYSQL_PASS 需要备份的数据库名称 &gt; "$BACKUP_SRC/$NOW-Databases.sql"
+    echo starting dropbox
+    /root/.dropbox-dist/dropboxd &amp;
+    }
+    stop() {
+    echo stoping dropbox
+    pkill dropbox
+    }
+    case "$1" in
+    start)
+    start
+    ;;
+    stop)
+    stop
+    ;;
+    esac
+</code></pre>
+
+<p>```
+将脚本放到~/.dropbox下，修改脚本权限：</p>
+
+<pre><code>        chmod 755 ~/.dropbox/dropboxbak.sh
+</code></pre>
+
+<p>添加计划任务：</p>
+
+<pre><code>        crontab –e
+</code></pre>
+
+<p>添加两条内容：</p>
+
+<pre><code>            0   3 * * * sh /root/.dropbox/dropboxbak.sh start
+
+            30 3 * * * sh /root/.dropbox/dropboxbak.sh stop
+</code></pre>
+
+<p>具体参数参照文档。 <br/>
+删除dropbox的方法： <br/>
+```</p>
+
+<h1>sh /root/.dropbox/dropboxbak.sh stop</h1>
+
+<h1>su - root</h1>
+
+<h1>cd</h1>
+
+<h1>rm -rf .dropbox .dropbox-dist  Dropbox dropbox.tar.gz dbmakefakelib.py dbreadconfig.py</h1>
+
+<p>```</p>
+
+<br />
+
+
+<p>本文地址：<a href="http://tinyxd.me/blog/2012/08/27/use-dropbox-backup-vps-and-database/">http://tinyxd.me/blog/2012/08/27/use-dropbox-backup-vps-and-database/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[图床管理]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/26/imag-file-explorer/"/>
+    <updated>2012-08-26T00:08:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/26/imag-file-explorer</id>
+    <content type="html"><![CDATA[<p>做网站，尤其是做多个网站的，文件的统一管理，备份是很重要的。本站用<a href="http://encode-explorer.siineiolekala.net/">Encode Explorer</a>来管理本站图片、上传附件等。 <br/>
+去Encode Explorer在sourceforge的<a href="http://sourceforge.net/projects/encode-explorer/files/encode-explorer/">项目官网</a>下载程序，其代码不过3k多行。只要将index.php上传到网站根目录，然后把nginx设置好用<a href="http://upload.tinyxd.me/">2级域名</a>指向此根目录，就可以了。    <br/>
+其中index.php需要改几个地方：   <br/>
+1.<code>$_CONFIG['lang'] = "zh_CN";</code> 支持中文  <br/>
+2.<code>$_CONFIG['users'] = array(array('username', 'password', 'admin'));</code>  建立admin用户   <br/>
+其中index.php介绍比较详细了。语法格式：array(username, password, status)    status为user可以查看目录但不可以修改，admin能够上传文件和删除文件。   <br/>
+3.<code>$_CONFIG['new_dir_mode'] = 0755;</code>     <br/>
+<code>$_CONFIG['upload_file_mode'] = 0644;</code> <br/>
+修改新建文件夹和上传文件的默认权限。    <br/>
+这就是最终完成的，用二级域名（只要将该域名dns解析到vps服务器地址就可以了）<a href="http://upload.tinyxd.me/">http://upload.tinyxd.me/</a>来上传/浏览/删除文件。  <br/>
+本文参考了<a href="http://log4d.com/">log4d</a>的<a href="http://log4d.com/2012/05/image-host/">使用独立图床子域名</a>。</p>
+
+<br />
+
+
+<p>本文地址：<a href="http://tinyxd.me/blog/2012/08/26/imag-file-explorer/">http://tinyxd.me/blog/2012/08/26/imag-file-explorer/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[vps lnmp配置优化]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/25/vps-optimization/"/>
+    <updated>2012-08-25T23:40:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/25/vps-optimization</id>
+    <content type="html"><![CDATA[<p>我选用了lnmp（linux + Nginx + PHP + MySQL ）来安装，方便快捷，安装后发现其实好多已经优化好了。  <br/>
+其中需要注意到的有以下几个： <br/>
+一. 基于xen架构的可以增加swap分区大小
+我的vps是openVZ的，swap分区是不能随意更改的。PS.主机商已经提供了128M的swap了。满足了！ <br/>
+<code>
+cd /var/
+dd if=/dev/zero of=swapfile bs=1024 count=262144
+/sbin/mkswap swapfile
+/sbin/swapon swapfile
+</code>
+然后让自己做的swap分区在系统启动时自动加载：</p>
+
+<pre><code>vi /etc/fstab   
+</code></pre>
+
+<p>在适当位置添加以下内容：</p>
+
+<pre><code>/var/swapfile swap swap defaults 0 0
+</code></pre>
+
+<!--more-->
+
+
+<p>二.Nginx主配置文件（nginx.conf）的优化
+Nginx每个进程耗费10M~12M内存，只开启一个Nginx进程，节省内存。</p>
+
+<pre><code>worker_processes 1;   
+</code></pre>
+
+<p>对网页文件、CSS、JS、XML等启动gzip压缩，减少数据传输量，提高访问速度。</p>
+
+<pre><code>gzip on;
+gzip_min_length  1k;
+gzip_buffers     4 16k;
+gzip_http_version 1.0;
+gzip_comp_level 2;
+gzip_types       text/plain application/x-javascript text/css application/xml;
+gzip_vary on;
+</code></pre>
+
+<p>还有：</p>
+
+<pre><code>location ~ .*\.(php|php5)?$
+   {
+     #将Nginx与FastCGI的通信方式由TCP改为Unix Socket。TCP在高并发访问下比Unix Socket稳定，但Unix Socket速度要比TCP快。
+     fastcgi_pass  unix:/tmp/php-cgi.sock;
+     #fastcgi_pass  127.0.0.1:9000;
+     fastcgi_index index.php;
+     include fcgi.conf;
+   }
+
+   location ~ /read.php
+   {
+     #将Nginx与FastCGI的通信方式由TCP改为Unix Socket。TCP在高并发访问下比Unix Socket稳定，但Unix Socket速度要比TCP快。
+     fastcgi_pass  unix:/tmp/php-cgi.sock;
+     #fastcgi_pass  127.0.0.1:9000;
+     fastcgi_index index.php;
+     include fcgi.conf;
+   }
+
+   #博客的图片较多，更改较少，将它们在浏览器本地缓存15天，可以提高下次打开我博客的页面加载速度。
+   location ~ .*\.(gif|jpg|jpeg|png|bmp|swf)$
+   {
+     expires      15d;
+   } 
+
+   #博客会加载很多JavaScript、CSS，将它们在浏览器本地缓存1天，访问者在看完一篇文章或一页后，再看另一篇文件或另一页的内容，无需从服务器再次下载相同的JavaScript、CSS，提高了页面显示速度。
+   location ~ .*\.(js|css)?$
+   {
+     expires      1d;
+   }   
+</code></pre>
+
+<p>其实上面说的lnmp自动安装包已经做好了这些优化！ <br/>
+包括后面<a href="http://blog.s135.com/post/375/2/1/">这篇文章</a>提到的，lnmp已经配置好了。</p>
+
+<br />
+
+
+<p>对于新手的忠告，将配置改好后，记得reload，或者restart。 <br/>
+经过优化后的vps，有人做过测试一小时，1000+的pv量都是没有问题的。相同的价格可见买vps还是比较合算的。 <br/>
+PS.我的vps现在放了两个站：<a href="http://tinyxd.me/">本站</a>、<a href="http://info.tinyxd.me/">冰之竹语</a>。后期准备再弄个技术bbs之类的玩玩。 <br/>
+对了我还放了个文件管理器<a href="http://encode-explorer.siineiolekala.net/">Encode Explorer</a>，专门用来存放上传的图片和文件的。地址在<a href="http://upload.tinyxd.me/">这里</a>。其实这一招是从<a href="http://log4d.com/2012/05/image-host/">这里</a>学来的。。。
+我将在我的下一篇<a href="http://tinyxd.me/blog/2012/08/26/imag-file-explorer/">文章</a>中详细说明。</p>
+
+<br />
+
+
+<p>本文地址：<a href="http://tinyxd.me/blog/2012/08/25/vps-optimization/">http://tinyxd.me/blog/2012/08/25/vps-optimization/</a></p>
+]]></content>
+  </entry>
+  
+</feed>

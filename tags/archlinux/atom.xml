@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: archlinux | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/archlinux/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[archlinux修改mac地址]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/23/archlinux-change-mac/"/>
+    <updated>2012-08-23T00:03:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/23/archlinux-change-mac</id>
+    <content type="html"><![CDATA[<p>快开学了，开学了紧接着就是找工作。由于今年的形势还不太好，所以最近一直在复习一些编程方面的东西，好久没更新文章了。 <br/>
+还没到月底，自己的流量都已经用完了，悲催啊！！！借用别人的，这就需要修改mac地址。学校流量3G真的伤不起阿！！！囧 <br/>
+查阅Archlinux Wiki可以看到有两种临时改变mac地址的方法：  <br/>
+1.使用macchanger或者使用ip命令：  <br/>
+<code>bash
+macchanger --mac=XX:XX:XX:XX:XX:XX
+</code>
+或者
+<code>bash
+ip link set dev eth0 down
+ip link set dev eth0 address XX:XX:XX:XX:XX:XX
+ip link set dev eth0 up
+</code>
+2.在每次启动时自动修改MAC地址。   <br/>
+创建文件<code>/etc/rc.d/functions.d/macspoof</code>   <br/>
+```
+spoof_mac() {</p>
+
+<pre><code>ip link set dev eth0 address XX:XX:XX:XX:XX:XX
+</code></pre>
+
+<p>}</p>
+
+<p>add_hook sysinit_end spoof_mac
+```
+具体可参见Archlinux wiki。</p>
+
+<p>inode上网可参考我以前的一篇文章:<a href="http://tinyxd.me/blog/2012/05/25/archbang-arch-linux-an-zhuang-inode/">http://tinyxd.me/blog/2012/05/25/archbang-arch-linux-an-zhuang-inode/</a> <br/>
+本文地址：<a href="http://tinyxd.me/blog/2012/08/23/archlinux-change-mac/">http://tinyxd.me/blog/2012/08/23/archlinux-change-mac/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[archlinux升级出现关于glibc的问题解决办法]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/07/25/archlinux-update-about-glibc/"/>
+    <updated>2012-07-25T18:44:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/07/25/archlinux-update-about-glibc</id>
+    <content type="html"><![CDATA[<p>好久没更新archlinux，今天更新，发现由于archlinux系统根目录结构的改变，导致好多人遇到问题，不错，笔者必然也遇到了。由于有前人的探索，再加上查阅archlinux官网论坛，得以顺利解决问题。
+运行<code>pacman -Syu</code>时会出现 <br/>
+<code>
+error: failed to commit transaction (conflicting files)
+glibc: /lib exists in filesystem
+Errors occurred, no packages were upgraded.
+</code> <br/>
+由于这次是glibc的升级，绝对不可以用<code>--force</code>，而之前是filesysterm的升级，必须用<code>--force</code>。 <br/>
+那么接下来该怎么办呢？ <br/>
+查阅了archlinux论坛地址：<a href="https://bbs.archlinux.org/viewforum.php?id=44">https://bbs.archlinux.org/viewforum.php?id=44</a>，并参考了<a href="http://www.j927.net/arch/archlinux%E5%8D%87%E7%BA%A7%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3%E8%AE%B0%E5%BD%95.html">这篇文章</a>。    <br/>
+发现这个<a href="https://bbs.archlinux.org/viewtopic.php?id=145186">帖子</a>，其中提到这两篇文章：<a href="http://allanmcrae.com/2012/07/updating-arch-linux-from-a-core-install/">updating-arch-linux-from-a-core-install</a> 和<a href="https://wiki.archlinux.org/index.php/DeveloperWiki:usrlib">DeveloperWiki:usrlib</a>，总结以下命令：</p>
+
+<!--more-->
+
+
+<p> <br/>
+<code>
+shell &gt; pacman -Sy
+shell &gt; rm -rf /var/run /var/lock &amp;&amp; pacman -Sf filesystem
+shell &gt; pacman -S tzdata
+shell &gt; pacman -U http://pkgbuild.com/~allan/glibc-2.16.0-1-i686.pkg.tar.xz #32位的用这个包(和下面的一条命令二选一)
+shell &gt; pacman -U http://pkgbuild.com/~allan/glibc-2.16.0-1-x86_64.pkg.tar.xz #64位的用这个包 具体的包名称可以打开http://pkgbuild.com/~allan/看一下
+shell &gt; rm /etc/profile.d/locale.sh
+shell &gt; pacman -Su --ignore glibc #因为pacman也升级了，新版本开启了软件包签名验证，故还需要运行下面2条命令
+shell &gt; pacman-key --init #该命令运行后不要什么都不做，随机敲键盘或者切换到其它终端(Alt+F2)运行些命令或做些其它操作
+shell &gt; pacman-key --populate archlinux
+shell &gt; pacman -Su #再更新被忽略的glibc
+</code>
+执行完上述命令后，系统顺利更新好了，但是依然出现下述问题： <br/>
+<code>
+error: failed to commit transaction (conflicting files)
+glibc: /lib exists in filesystem
+Errors occurred, no packages were upgraded.
+</code> <br/>
+我就去论坛中寻找，果不其然也有类似于我的情况，原帖<a href="http://bbs.archbang.org/viewtopic.php?pid=16509">在此</a>。
+<code>
+shell &gt; pacman -R broadcom-wl
+shell &gt; pacman -Su
+shell &gt; pacman -S broadcom-wl #如果需要的话，再次安装即可
+</code>
+至此，升级结束。</p>
+
+<br />
+
+
+<p>本站文章如果没有特别说明，均为<strong>原创</strong>，转载请以<strong>链接</strong>方式注明本文地址：<a href="http://tinyxd.me/blog/2012/07/25/archlinux-update-about-glibc/">http://tinyxd.me/blog/2012/07/25/archlinux-update-about-glibc/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[archlinux 无线网络连接]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/07/16/archlinux-wireless-network-connection/"/>
+    <updated>2012-07-16T11:24:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/07/16/archlinux-wireless-network-connection</id>
+    <content type="html"><![CDATA[<p>今天，回家了。由于家里用的无线路由器，我的本是archlinux系统，所以这就涉及到archlinux的无线网络配置。 <br/>
+本文参考了<a href="https://wiki.archlinux.org/index.php/Wireless_Setup">archlinux官方wiki</a>。 <br/>
+配置无线网络一般分两步： <br/>
+第一步是识别硬件、安装正确的驱动程序并进行配置； <br/>
+第二步是选择一种管理无线连接的方式。 <br/>
+关于第一步，wiki中有详细的介绍，我就不多叙述。 <br/>
+第二步，有几个命令和无线网络的加密方法，需要说说。 <br/>
+大概有两种方法：一个是手动，一个是自动。</p>
+
+<!--more-->
+
+
+<h2>方法一：手动</h2>
+
+<p>不加密/WEP ：ifconfig + iwconfig + dhcpcd/ifconfig  <br/>
+WPA/WPA2 PSK：ifconfig + iwconfig + wpa_supplicant + dhcpcd/ifconfig  <br/>
+1.激活内核接口:</p>
+
+<pre><code># ifconfig wlan0 up    
+</code></pre>
+
+<p>2.查看可以的无线接入点信息：</p>
+
+<pre><code># iwlist wlan0 scan
+</code></pre>
+
+<p>3.根据加密方式不同，需要使用密码将无线设备关联到接入点。
+假设要使用的接入点 ESSID 为 MyEssid:  <br/>
+a.无加密</p>
+
+<pre><code># iwconfig wlan0 essid "MyEssid"   
+</code></pre>
+
+<p>b.WEP  <br/>
+使用十六进制密码：</p>
+
+<pre><code># iwconfig wlan0 essid "MyEssid" key 1234567890   
+</code></pre>
+
+<p>使用 ascii 密码：</p>
+
+<pre><code># iwconfig wlan0 essid "MyEssid" key s:asciikey   
+</code></pre>
+
+<p>c.WPA/WPA2   <br/>
+需要安装 WPA_Supplicant 编辑 /etc/wpa_supplicant.conf 文件。 <br/>
+a.先备份下 /etc/wpa_supplicant.conf：</p>
+
+<pre><code>mv /etc/wpa_supplicant.conf /etc/wpa_supplicant.conf.original   
+</code></pre>
+
+<p>b.修改此文件，适合你的无线网络环境。当然可以阅读系统自带的/etc/wpa_supplicant.conf ，然后根据自己的无线环境来手动编辑。也可以使用下面的命令。</p>
+
+<pre><code>wpa_passphrase linksys "my_secret_passkey" &gt; /etc/wpa_supplicant.conf   
+</code></pre>
+
+<p>这里，linksys代表的是要连接的无线网络的essid,而my_secret_passkey则是无线网络的密码。然后运行：</p>
+
+<pre><code># wpa_supplicant -i wlan0 -c /etc/wpa_supplicant.conf
+</code></pre>
+
+<p>假设设备使用 wext 驱动。如果无法工作，可能需要调整选项，参见 <a href="https://wiki.archlinux.org/index.php/WPA_Supplicant">WPA_Supplicant</a>。 <br/>
+4.获取IP地址。
+静态IP：</p>
+
+<pre><code># ifconfig wlan0 192.168.0.2
+# route add default gw 192.168.0.1
+</code></pre>
+
+<p>动态IP获取使用 DHCP：</p>
+
+<pre><code># dhcpcd wlan0
+</code></pre>
+
+<p>如果因为“waiting for carrier”出现超时错误，可以设置通道模式为 auto</p>
+
+<pre><code># iwconfig wlan0 channel auto 
+</code></pre>
+
+<p>注意: 尽管手动配置可以帮助解决无线问题，每次重启都需要执行这些步骤。</p>
+
+<h2>方法二：使用管理工具来管理</h2>
+
+<p>netcfg, newlan (AUR), wicd, NetworkManager, 等。
+我使用的是NetworkManager，地址在<a href="https://wiki.archlinux.org/index.php/NetworkManager">这里</a>。</p>
+
+<br />   
+
+
+<p>本站文章如果没有特别说明，均为<strong>原创</strong>，转载请以<strong>链接</strong>方式注明本文地址：<a href="http://tinyxd.me/blog/2012/07/16/archlinux-wireless-network-connection/">http://tinyxd.me/blog/2012/07/16/archlinux-wireless-network-connection/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[archlinux下的时间时区设置]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/07/14/archlinux-time-config/"/>
+    <updated>2012-07-14T23:56:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/07/14/archlinux-time-config</id>
+    <content type="html"><![CDATA[<p>本文方法适合于archlinux，archbang等衍生版本。archbang亲测。 <br/>
+1.打开<code>/etc/rc.conf</code>，将<code>TIMEZONE</code>改为<code>"Asia/Shanghai"</code>。 <br/>
+2.打开<code>/etc/rc.conf</code>，将<code>HARDWARECLOCK</code>改为<code>"localtime"</code>。 <br/>
+下面是改完的rc.conf：</p>
+
+<!--more-->
+
+
+<p> <br/>
+<div class='bogus-wrapper'><notextile><figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;h1>/etc/rc.conf - Main Configuration for Arch Linux&lt;/h1>
+</span><span class='line'>
+</span><span class='line'>&lt;p>LOCALE="en_US.UTF-8"
+</span><span class='line'>DAEMON_LOCALE="no"
+</span><span class='line'>HARDWARECLOCK="localtime"
+</span><span class='line'>TIMEZONE="Asia/Shanghai"
+</span><span class='line'>KEYMAP="us"
+</span><span class='line'>CONSOLEFONT=
+</span><span class='line'>CONSOLEMAP=
+</span><span class='line'>USECOLOR="yes"&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>MODULES=()&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>UDEV_TIMEOUT=30
+</span><span class='line'>USEDMRAID="no"
+</span><span class='line'>USEBTRFS="no"
+</span><span class='line'>USELVM="no"&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>HOSTNAME="archbang"&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>interface=eth0
+</span><span class='line'>address=
+</span><span class='line'>netmask=
+</span><span class='line'>broadcast=
+</span><span class='line'>gateway=&lt;/p>
+</span><span class='line'>
+</span><span class='line'>&lt;p>DAEMONS=(dbus networkmanager !network !dhcdbd syslog-ng @alsa @iNodeAuthService @openntpd)</span></code></pre></td></tr></table></div></figure></notextile></div> <br/>
+3.在<code>/etc/localtime</code>做个软链接给具体的<code>zoneinfo</code>：</p>
+
+<pre><code>sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime     
+</code></pre>
+
+<p>4.这个时候时区应该算是正确设置好了，把硬件时钟再同步回系统来。</p>
+
+<pre><code>$ sudo hwclock --hctosys   
+</code></pre>
+
+<p>5.现在看时间正确了没，如果还有问题，参照archlinux的官方wiki（题外话：wiki是个好东西，可以找到你需要的）安装openNTPD，自动同步时间。</p>
+
+<pre><code>$ sudo pacman -S openntpd   
+</code></pre>
+
+<p>配置文件看了下，基本都不用修改，直接起服务：</p>
+
+<pre><code>$ sudo /etc/rc.d/openntpd start   
+</code></pre>
+
+<p>确保网络通畅，等一会，系统时间应该就会更新了，确实蛮方便 <br/>
+最后在<code>rc.conf</code>的DAEMONS里面加上<code>@openntpd</code>，确保开机后台运行。</p>
+
+<br />   
+
+
+<p>本站文章如果没有特别说明，均为<strong>原创</strong>，转载请以<strong>链接</strong>方式注明本文地址：<a href="http://tinyxd.me/blog/2012/07/14/archlinux-time-config/">http://tinyxd.me/blog/2012/07/14/archlinux-time-config/</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[解决pygments.rb (RubyPython) 找不到libpython的问题(archlinux下)]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/06/05/cannot-find-libpython/"/>
+    <updated>2012-06-05T08:01:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/06/05/cannot-find-libpython</id>
+    <content type="html"><![CDATA[<p>本文章转自：<a href="http://ruby-china.org/topics/289">Ruby China 论坛</a> <br/>
+如果找不到python，或者系统默认得python是3.x (比如Arch Linux)，手动制定下路径 <br/>
+<code>
+RubyPython.configure python_exe: '/usr/bin/python2.7'
+</code>
+对于rails项目比如ruby-china，可以把这行代码丢到config/initializers下。</p>
+
+<p>不过RubyPython仍然可能找不到libpython而提示lib.so not found。这是由于RubyPython确定正确libpython的规则和你的系统不兼容，可以通过手动加些symbol links来解决 (目前RubyPython的git最新代码相对当前稳定版本0.5.3改动非常大，希望新版本能解决这个问题，就先不去提交fixing了)。</p>
+
+<p>可以参考 PythonExec initialize 方法中的规则来建symbol link.</p>
+
+<!--more-->
+
+
+<p>首先运行该python，得到版本号x.y，以python2.7为例 <br/>
+```
+$ python2.7 -c "import sys;print '%d.%d' % sys.version_info[:2]"</p>
+
+<p>=> 2.7
+<code>
+找到该python对应得libpython，可以用工具ldd:   
+</code>
+$ ldd /usr/lib/python2.7 | grep python</p>
+
+<p>=> libpython2.7.so.1.0 => /usr/lib/libpython2.7.so.1.0
+<code>
+为找到的这个文件创建链接。下面用#{exe_base}表示通过RubyPython.configure指定的python可执行程序的文件名部分，#{x}和#{y}是通过运行这个python找到得版本号，#{libpython}是该python对应得libpython库文件路径。   
+</code>
+sudo ln -s #{libpython} /usr/lib/lib#{exe_base}#{x}#{y}.so
+sudo ln -s #{libpython} /usr/lib/lib#{exe_base}#{x}.#{y}.so
+<code>
+以我的环境(Arch Linux)为例，exe_base是python2.7，版本号x.y是2.7，libpython是/usr/lib/libpython2.7.so.1.0，   
+</code>
+sudo ln -s /usr/lib/libpython2.7.so.1.0 /usr/lib/libpython2.727.so
+sudo ln -s /usr/lib/libpython2.7.so.1.0 /usr/lib/libpython2.72.7.so
+```</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: vpn | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/vpn/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[VPS安装openVPN]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/30/debian-ubuntu-setup-openvpn/"/>
+    <updated>2012-08-30T12:24:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/30/debian-ubuntu-setup-openvpn</id>
+    <content type="html"><![CDATA[<p>首先，你得有VPS或者独立服务器。 <br/>
+因为我的VPS是openVZ的，查资料发现新的openVZ的VPS是支持PPTP的。不过鉴于安全性的考虑我还是使用openVPN。 <br/>
+本文后面会介绍在debian 6下面安装openvpn的一些注意事项以及在xp下面安装openVPN。</p>
+
+<h2>使用一键安装包来安装openVPN   </h2>
+
+<p>1.检查你的VPS是否支持Tun/Tap/nat/ppp，登录VPS检查</p>
+
+<pre><code>cat /dev/net/tun
+</code></pre>
+
+<p>如果返回 <code>cat: /dev/net/tun: File descriptor in bad state</code> 说明tun是可用的。</p>
+
+<pre><code>iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o venet0 -j MASQUERADE
+</code></pre>
+
+<p>如果返回<code>iptables: No chain/target/match by that name</code>说明nat也是可以用的。</p>
+
+<!--more-->
+
+
+<p>如果返回结果不是以上描述的，那么说明你的VPS服务商默认没有开通。你可以发ticket要求VPS提供商提供这个，我的VPS就没有提供这个，就发了ticket，不过很快就解决了。 <br/>
+2.检查服务器的DNS</p>
+
+<pre><code>vi /etc/resolv.conf
+</code></pre>
+
+<p>可以使用  <br/>
+OpenDNS提供的DNS服务器地址
+　　208.67.222.222
+　　208.67.220.220
+Google提供的DNS服务</p>
+
+<pre><code>8.8.8.8
+8.8.4.4
+</code></pre>
+
+<p>3.下载John Malkowski的Debian OpenVPN脚本。</p>
+
+<pre><code>wget http://vpsnoc.com/scripts/debian-openvpn.sh
+chmod +x debian-openvpn.sh
+./debian-openvpn.sh
+</code></pre>
+
+<p>连续填写server和client的信息，出现y/n的时候都选择y。 <br/>
+然后把生成的<code>keys.tgz</code>下载自本地。</p>
+
+<h2>不使用一键安装包，一步步自己安装</h2>
+
+<p>以下内容参考了：<a href="http://www.vpser.net/build/linode-install-openvpn.html">VPS侦探 Linode VPS OpenVPN安装配置教程(基于Debian/Ubuntu)</a>    <br/>
+1.安装</p>
+
+<pre><code>apt-get install openvpn udev lzop
+</code></pre>
+
+<p>2.OpenVPN提供了”easy-rsa”这套加密方面的工具openvpn安装好之后easy-rsa在/usr/share/doc/openvpn/examples/easy-rsa/文件夹中为了使OpenVPN正常工作需要把easy-rsa复制到/etc/openvpn中.运行下列命令:</p>
+
+<pre><code>#cp -R /usr/share/doc/openvpn/examples/easy-rsa/ /etc/openvpn
+</code></pre>
+
+<p>在<code>/etc/openvpn/easy-rsa/2.0/</code>中设置，基本所有的OpenVPN配置都在这。 <br/>
+生产CA证书： <br/>
+<code>
+cd /etc/openvpn/easy-rsa/2.0
+source vars
+./clean-all
+./build-ca
+</code>
+<code>./build-ca</code>时会提示输入一些信息，可以都直接回车按默认信息。 <br/>
+3.生成服务器端证书和密钥：</p>
+
+<pre><code>./build-key-server server
+</code></pre>
+
+<p>有两次需要输入y。 <br/>
+4.生产客户端证书和密钥：</p>
+
+<pre><code>./build-key client
+</code></pre>
+
+<p>生成的证书和密钥在<code>/etc/openvpn/easy-rsa/2.0/keys/</code>下面。 <br/>
+5.生成Diffie Hellman参数：</p>
+
+<pre><code>./build-dh
+</code></pre>
+
+<p>6.安装配置openVPN客户端    详情见参考。</p>
+
+<h2>windows客户端下载</h2>
+
+<p>1.下载OpenVPN：<a href="http://www.openvpn.net/index.php/open-source/downloads.html">http://www.openvpn.net/index.php/open-source/downloads.html</a>下载最新版本安装包。 <br/>
+2.安装，建议win7/vista用户安装到非系统分区。
+3.修改虚拟网卡DNS，Google DNS :8.8.8.8和 8.8.4.4；OpenDNS的208.67.222.222 和208.67.220.220。 <br/>
+4.将keys.tgz解压至openVPN安装目录下的config目录。 <br/>
+5.运行openVPN。 <br/>
+6.如果没有什么差错的话至此安装成功。 <br/>
+可以进<a href="http://www.dnsstuff.com">http://www.dnsstuff.com</a> 或者facebook/twitter等测试下。惊喜等着你哦！ <br/>
+如果需要和你的朋友分享这个，可以新建个用户，重新生成客户端证书。 <br/>
+<code>
+cd /etc/openvpn/easy-rsa/2.0
+ ./vars
+./build-key user1
+</code>
+将新生成的user1.crt,user1.key,user1.csr三个文件和*.ovpn和ca.crt、ca.key三个文件一起下载到本地，编辑下载下来的<code>*.ovpn</code>文件将其中的<code>cert client1.crt</code>和<code>key client1.key</code>修改为：<code>cert user1.crt</code>和<code>key user1.key</code>。  <br/>
+把以上文件，打包发送给你的朋友。并将其解压到config目录下。</p>
+
+<br />
+
+
+<p>本文地址：<a href="http://tinyxd.me/blog/2012/08/30/debian-ubuntu-setup-openvpn/">http://tinyxd.me/blog/2012/08/30/debian-ubuntu-setup-openvpn/</a></p>
+]]></content>
+  </entry>
+  
+</feed>

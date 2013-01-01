@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: explorer | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/explorer/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[图床管理]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/26/imag-file-explorer/"/>
+    <updated>2012-08-26T00:08:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/26/imag-file-explorer</id>
+    <content type="html"><![CDATA[<p>做网站，尤其是做多个网站的，文件的统一管理，备份是很重要的。本站用<a href="http://encode-explorer.siineiolekala.net/">Encode Explorer</a>来管理本站图片、上传附件等。 <br/>
+去Encode Explorer在sourceforge的<a href="http://sourceforge.net/projects/encode-explorer/files/encode-explorer/">项目官网</a>下载程序，其代码不过3k多行。只要将index.php上传到网站根目录，然后把nginx设置好用<a href="http://upload.tinyxd.me/">2级域名</a>指向此根目录，就可以了。    <br/>
+其中index.php需要改几个地方：   <br/>
+1.<code>$_CONFIG['lang'] = "zh_CN";</code> 支持中文  <br/>
+2.<code>$_CONFIG['users'] = array(array('username', 'password', 'admin'));</code>  建立admin用户   <br/>
+其中index.php介绍比较详细了。语法格式：array(username, password, status)    status为user可以查看目录但不可以修改，admin能够上传文件和删除文件。   <br/>
+3.<code>$_CONFIG['new_dir_mode'] = 0755;</code>     <br/>
+<code>$_CONFIG['upload_file_mode'] = 0644;</code> <br/>
+修改新建文件夹和上传文件的默认权限。    <br/>
+这就是最终完成的，用二级域名（只要将该域名dns解析到vps服务器地址就可以了）<a href="http://upload.tinyxd.me/">http://upload.tinyxd.me/</a>来上传/浏览/删除文件。  <br/>
+本文参考了<a href="http://log4d.com/">log4d</a>的<a href="http://log4d.com/2012/05/image-host/">使用独立图床子域名</a>。</p>
+
+<br />
+
+
+<p>本文地址：<a href="http://tinyxd.me/blog/2012/08/26/imag-file-explorer/">http://tinyxd.me/blog/2012/08/26/imag-file-explorer/</a></p>
+]]></content>
+  </entry>
+  
+</feed>

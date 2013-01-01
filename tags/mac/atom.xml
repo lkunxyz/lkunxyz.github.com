@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Tag: mac | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/tags/mac/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[archlinux修改mac地址]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/08/23/archlinux-change-mac/"/>
+    <updated>2012-08-23T00:03:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/08/23/archlinux-change-mac</id>
+    <content type="html"><![CDATA[<p>快开学了，开学了紧接着就是找工作。由于今年的形势还不太好，所以最近一直在复习一些编程方面的东西，好久没更新文章了。 <br/>
+还没到月底，自己的流量都已经用完了，悲催啊！！！借用别人的，这就需要修改mac地址。学校流量3G真的伤不起阿！！！囧 <br/>
+查阅Archlinux Wiki可以看到有两种临时改变mac地址的方法：  <br/>
+1.使用macchanger或者使用ip命令：  <br/>
+<code>bash
+macchanger --mac=XX:XX:XX:XX:XX:XX
+</code>
+或者
+<code>bash
+ip link set dev eth0 down
+ip link set dev eth0 address XX:XX:XX:XX:XX:XX
+ip link set dev eth0 up
+</code>
+2.在每次启动时自动修改MAC地址。   <br/>
+创建文件<code>/etc/rc.d/functions.d/macspoof</code>   <br/>
+```
+spoof_mac() {</p>
+
+<pre><code>ip link set dev eth0 address XX:XX:XX:XX:XX:XX
+</code></pre>
+
+<p>}</p>
+
+<p>add_hook sysinit_end spoof_mac
+```
+具体可参见Archlinux wiki。</p>
+
+<p>inode上网可参考我以前的一篇文章:<a href="http://tinyxd.me/blog/2012/05/25/archbang-arch-linux-an-zhuang-inode/">http://tinyxd.me/blog/2012/05/25/archbang-arch-linux-an-zhuang-inode/</a> <br/>
+本文地址：<a href="http://tinyxd.me/blog/2012/08/23/archlinux-change-mac/">http://tinyxd.me/blog/2012/08/23/archlinux-change-mac/</a></p>
+]]></content>
+  </entry>
+  
+</feed>

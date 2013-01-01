@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: python | Keen on Art of Tech]]></title>
+  <link href="http://lkunxyz.github.com/blog/categories/python/atom.xml" rel="self"/>
+  <link href="http://lkunxyz.github.com/"/>
+  <updated>2013-01-01T20:55:27+08:00</updated>
+  <id>http://lkunxyz.github.com/</id>
+  <author>
+    <name><![CDATA[Tiny]]></name>
+    <email><![CDATA[admin@tinyxd.me]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[本地备份octopress]]></title>
+    <link href="http://lkunxyz.github.com/blog/2012/07/12/python-backup-octopress/"/>
+    <updated>2012-07-12T22:42:00+08:00</updated>
+    <id>http://lkunxyz.github.com/blog/2012/07/12/python-backup-octopress</id>
+    <content type="html"><![CDATA[<p>用python脚本备份octopress，当然也可以备份其他的目录。只要修改对应路径就可以了。
+``` python octopress_backup.py</p>
+
+<h1>!/usr/bin/python2</h1>
+
+<h1>Filename: octopress_backup.py</h1>
+
+<p>import os
+import time</p>
+
+<h1>1. 需要备份的目录(也可以将其他的文件夹一起打包)</h1>
+
+<p>source = ['/home/tiny/octopress', '/home/tiny/mytest']</p>
+
+<h1>2. 备份的目标位置</h1>
+
+<p>target_dir = '/home/tiny/backup/' # Remember to change this to what you will be using</p>
+
+<h1>3. 本脚本备份成tar，当然也可以压缩gzip。</h1>
+
+<h1>4. 日期是目录名</h1>
+
+<p>today = target_dir + time.strftime('%Y%m%d')</p>
+
+<h1>当前时间是备份文件的名称</h1>
+
+<p>now = time.strftime('%H%M%S')</p>
+
+<h1>可以对备份的文件进行一些说明</h1>
+
+<p>comment = raw_input('Enter a comment --> ')
+if len(comment) == 0: # check if a comment was entered</p>
+
+<pre><code>target = today + os.sep + now + '.tar'
+</code></pre>
+
+<p>else:</p>
+
+<pre><code>target = today + os.sep + now + '_' +\
+    comment.replace(' ', '_') + '.tar'
+</code></pre>
+
+<h1>创建子文件夹</h1>
+
+<p>if not os.path.exists(today):</p>
+
+<pre><code>os.mkdir(today) # make directory
+print 'Successfully created directory', today
+</code></pre>
+
+<h1>5. tar压缩命令（unix/linux）</h1>
+
+<p>tar_command = "tar -cvf '%s' %s" % (target, ' '.join(source))</p>
+
+<h1>运行备份命令</h1>
+
+<p>if os.system(tar_command) == 0:</p>
+
+<pre><code>print 'Successful backup to', target
+</code></pre>
+
+<p>else:</p>
+
+<pre><code>print 'Backup FAILED'
+</code></pre>
+
+<p>```</p>
+
+<br />
+
+
+<p>本站文章如果没有特别说明，均为<strong>原创</strong>，转载请以<strong>链接</strong>方式注明本文地址：<a href="http://tinyxd.me/blog/2012/07/12/python-backup-octopress/">http://tinyxd.me/blog/2012/07/12/python-backup-octopress/</a></p>
+]]></content>
+  </entry>
+  
+</feed>
