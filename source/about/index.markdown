@@ -1,18 +1,18 @@
 ---
 layout: page
-title: "Tiny"
-date: 2012-05-23 07:43
+title: "xyz"
+date: 2013-1-1 
 comments: false
-dq_id: http://tinyxd.me/about/
-dq_url: http://tinyxd.me/about/
+dq_id: http://lkunxyz.github.com/about/
+dq_url: http://lkunxyz.github.com/about/
 sharing: false
 footer: true
 ---
 
 <img src="/images/my_pic.jpg" align ="right" alt="My photo" width="170" height="120">
 Master   
-Circuits and systems, School of Electronic Engneering   
+Computer department 
 Xidian University   
 Shaanxi, China, 710071     
-Email: <admin@tinyxd.me>    
+Email: xxx@xxx    
 

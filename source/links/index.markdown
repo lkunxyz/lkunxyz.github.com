@@ -6,6 +6,7 @@ comments: false
 sharing: false
 footer: true
 ---
+<!--
 西电小新：<a href="http://tinyxd.me/" target="_blank" > http://tinyxd.me </a>    
 
 冰之竹语：<a href="http://info.tinyxd.me/" target="_blank" > http://info.tinyxd.me </a>    
@@ -37,5 +38,6 @@ DoMyself：<a href="http://www.domyself.me/" target="_blank"> http://www.domysel
 我爱程序员：<a href="http://www.52coder.net/" target="_blank"> http://www.52coder.net/</a>     
 
 互联网战：<a href="http://www.diannao.it/" target="_blank"> http://www.diannao.it/</a>
+-->
 
-申请**友情链接**，请发送Email到admin(at)tinyxd(dot)me，或到本站[留言板](http://tinyxd.me/message-board/)留言。      
+申请**友情链接**，请发送Email到admin(at)tinyxd(dot)me，或到本站[留言板]留言。      
