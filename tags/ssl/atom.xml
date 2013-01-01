@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Tag: ssl | Keen on Art of Tech]]></title>
+  <title><![CDATA[Tag: ssl | K.I.S.S(Keep It Simple,Stupid)]]></title>
   <link href="http://lkunxyz.github.com/tags/ssl/atom.xml" rel="self"/>
   <link href="http://lkunxyz.github.com/"/>
-  <updated>2013-01-01T20:55:27+08:00</updated>
+  <updated>2013-01-01T21:23:43+08:00</updated>
   <id>http://lkunxyz.github.com/</id>
   <author>
-    <name><![CDATA[Tiny]]></name>
-    <email><![CDATA[admin@tinyxd.me]]></email>
+    <name><![CDATA[lkunxyz]]></name>
+    <email><![CDATA[lkunemail@126.me]]></email>
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
