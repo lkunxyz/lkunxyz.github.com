@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[K.I.S.S(Keep It Simple,Stupid)]]></title>
-  <link href="http://lkunxyz.github.com/atom.xml" rel="self"/>
+  <title><![CDATA[Category: article | K.I.S.S(Keep It Simple,Stupid)]]></title>
+  <link href="http://lkunxyz.github.com/blog/categories/article/atom.xml" rel="self"/>
   <link href="http://lkunxyz.github.com/"/>
   <updated>2013-01-01T23:25:27+08:00</updated>
   <id>http://lkunxyz.github.com/</id>
